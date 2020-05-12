@@ -16,40 +16,12 @@ import theGhastModding.planetGen.utils.SphereUtils;
 
 public class ComplexSurface {
 	
-	private static double[] RGB(Color c) {
-		return new double[] {c.getRed() / 255.0, c.getGreen() / 255.0, c.getBlue() / 255.0};
-	}
-	
-	private static int printed;
-	
-	private static void printBar() {
-		System.out.print("|");
-		for(int i = 0; i < 98; i++) System.out.print("-");
-		System.out.println("|");
-		printed = 0;
-	}
-	
-	private static void printProgress(int i, int max) {
-		int percentage = (int)((double)i / (double)max * 100.0);
-		if(percentage >= printed) {
-			int cnt = percentage - printed;
-			for(int j = 0; j < cnt; j++) {
-				System.out.print(">");
-				printed++;
-			}
-		}
-	}
-	
-	private static void finishProgress() {
-		System.out.println(">");
-		printed = 0;
-	}
-	
 	private static double sigmoid(double x) {
 		return 1.0 / (1.0 + Math.exp(-x));
 	}
 	
 	//IDEA: OpenCL perlin noise
+	//IDEA: Use Worley noise in mountain generator
 	public static void main(String[] args) {
 		try {
 			/*
@@ -60,8 +32,8 @@ public class ComplexSurface {
 			final int planetRadius = 600000;
 			final double planetCircumference = planetRadius * 2.0 * Math.PI;
 			final double resMul = 600000.0 / (double)planetRadius * 0.85;
-			final double baseOceanFactor = 0;
-			final double basePoleRadius = 0.106;
+			final double oceanFactor = 0;
+			final double poleRadius = 400000;
 			final double beachThreshold = 0.015 / 12.0;
 			final double mountainsFadeStart = 0.1;
 			final double mountainsFadeEnd = 0.25;
@@ -139,39 +111,39 @@ public class ComplexSurface {
 			OctaveNoise3D polesPerturbNoise =       new OctaveNoise3D(rng, 16, 16, 16, 3, 2.0, 0.6);
 			WorleyNoise  mountainWorley =          new WorleyNoise(rng, 64, 64, 64);
 			
-			double[] biomeColorOceans =          RGB(new Color(55, 98, 171));
-			double[] biomeColorLowlands =        RGB(new Color(131, 188, 46));
-			double[] biomeColorHills =           RGB(new Color(93, 133, 42));
-			double[] biomeColorMountains =       RGB(new Color(167, 167, 167));
-			double[] biomeColorDesert =          RGB(new Color(234, 191, 111));
-			double[] biomeColorDesertHills =     RGB(new Color(178, 145, 83));
-			double[] biomeColorDesertMountains = RGB(new Color(127, 103, 59));
-			double[] biomeColorTaiga =           RGB(new Color(199, 143, 223));
-			double[] biomeColorTaigaHills =      RGB(new Color(113, 81, 127));
-			double[] biomeColorLakes =           RGB(new Color(40, 72, 127));
-			double[] biomeColorNorthPole =       RGB(new Color(255, 255, 255));
-			double[] biomeColorSouthPole =       RGB(new Color(190, 190, 190));
-			double[] biomeColorBeaches =         RGB(new Color(250, 242, 183));
-			double[] biomeColorPeaks =           RGB(new Color(220, 220, 220));
-			double[] biomeColorSnow =            RGB(new Color(220, 220, 220));
-			double[] biomeColorSnowyHills =      RGB(new Color(220, 220, 220));
+			double[] biomeColorOceans =          MapUtils.RGB(new Color(55, 98, 171));
+			double[] biomeColorLowlands =        MapUtils.RGB(new Color(131, 188, 46));
+			double[] biomeColorHills =           MapUtils.RGB(new Color(93, 133, 42));
+			double[] biomeColorMountains =       MapUtils.RGB(new Color(167, 167, 167));
+			double[] biomeColorDesert =          MapUtils.RGB(new Color(234, 191, 111));
+			double[] biomeColorDesertHills =     MapUtils.RGB(new Color(178, 145, 83));
+			double[] biomeColorDesertMountains = MapUtils.RGB(new Color(127, 103, 59));
+			double[] biomeColorTaiga =           MapUtils.RGB(new Color(199, 143, 223));
+			double[] biomeColorTaigaHills =      MapUtils.RGB(new Color(113, 81, 127));
+			double[] biomeColorLakes =           MapUtils.RGB(new Color(40, 72, 127));
+			double[] biomeColorNorthPole =       MapUtils.RGB(new Color(255, 255, 255));
+			double[] biomeColorSouthPole =       MapUtils.RGB(new Color(190, 190, 190));
+			double[] biomeColorBeaches =         MapUtils.RGB(new Color(250, 242, 183));
+			double[] biomeColorPeaks =           MapUtils.RGB(new Color(220, 220, 220));
+			double[] biomeColorSnow =            MapUtils.RGB(new Color(220, 220, 220));
+			double[] biomeColorSnowyHills =      MapUtils.RGB(new Color(220, 220, 220));
 			
-			double[] lowlandColor =   RGB(new Color(50, 62, 36));
-			double[] hillsColor =     RGB(new Color(51, 56, 41));
-			double[] mountainsColor = RGB(new Color(84, 84, 84));
-			double[] desertColor =    RGB(new Color(132, 116, 87));
-			double[] taigaColor =     RGB(new Color(73, 91, 65));
-			double[] oceansColor =    RGB(new Color(18, 26, 40));
-			double[] polesColor =     RGB(new Color(174, 198, 211));
-			double[] beachesColor =   RGB(new Color(169, 156, 117));
-			double[] peaksColor =     RGB(new Color(174, 198, 211));
-			double[] snowColor =      RGB(new Color(174, 198, 211));
-			/*double[] lowlandColor = RGB(new Color(53, 74, 22));
-			double[] hillsColor =     RGB(new Color(56, 60, 34));
-			double[] mountainsColor = RGB(new Color(84, 84, 84));
-			double[] desertColor =    RGB(new Color(153, 121, 65));
-			double[] taigaColor =     RGB(new Color(28, 70, 24));
-			double[] oceansColor =    RGB(new Color(7, 23, 51));*/
+			double[] lowlandColor =   MapUtils.RGB(new Color(50, 62, 36));
+			double[] hillsColor =     MapUtils.RGB(new Color(51, 56, 41));
+			double[] mountainsColor = MapUtils.RGB(new Color(84, 84, 84));
+			double[] desertColor =    MapUtils.RGB(new Color(132, 116, 87));
+			double[] taigaColor =     MapUtils.RGB(new Color(73, 91, 65));
+			double[] oceansColor =    MapUtils.RGB(new Color(18, 26, 40));
+			double[] polesColor =     MapUtils.RGB(new Color(174, 198, 211));
+			double[] beachesColor =   MapUtils.RGB(new Color(169, 156, 117));
+			double[] peaksColor =     MapUtils.RGB(new Color(174, 198, 211));
+			double[] snowColor =      MapUtils.RGB(new Color(174, 198, 211));
+			/*double[] lowlandColor = MapUtils.RGB(new Color(53, 74, 22));
+			double[] hillsColor =     MapUtils.RGB(new Color(56, 60, 34));
+			double[] mountainsColor = MapUtils.RGB(new Color(84, 84, 84));
+			double[] desertColor =    MapUtils.RGB(new Color(153, 121, 65));
+			double[] taigaColor =     MapUtils.RGB(new Color(28, 70, 24));
+			double[] oceansColor =    MapUtils.RGB(new Color(7, 23, 51));*/
 			
 			double[][] continentMap =  new double[width][height];
 			double[][] distanceMap =   new double[width][height];
@@ -180,7 +152,6 @@ public class ComplexSurface {
 			double[][] lakesMap =      new double[width][height];
 			double[][] desertMap =     new double[width][height];
 			double[][] taigaMap =      new double[width][height];
-			double[][] snowMap =       new double[width][height];
 			double[][] finalNoiseMap = new double[width][height];
 			double[][] ground =        new double[width][height];
 			double[][] hills =         new double[width][height];
@@ -191,21 +162,23 @@ public class ComplexSurface {
 			double[][][] biomeMap =    new double[width][height][3];
 			
 			System.out.println("Continents & Biomes");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
+				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
+					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 					continentMap[i][j] = (NoiseUtils.sampleSpherableNoise(continentNoise, i, j, width, height, 0.85 * resMul, 0.85 * resMul, 0.25) + oceanFactor / 2.0) * 12.0;
 					distanceMap[i][j] = continentMap[i][j] / 12.0;
 					continentMap[i][j] = /*1.0 - */Math.max(0, Math.min(1, continentMap[i][j]));
 				}
 			}
-			finishProgress();
-			displayMap("distances.png", distanceMap);
+			ProgressBars.finishProgress();
+			MapUtils.displayMap("distances.png", distanceMap);
 			
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] < 0) continue;
@@ -322,7 +295,7 @@ public class ComplexSurface {
 					}*/
 				}
 			}
-			finishProgress();
+			ProgressBars.finishProgress();
 			
 			BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 			for(int i = 0; i < width; i++) {
@@ -371,9 +344,9 @@ public class ComplexSurface {
 			//System.exit(0);
 			
 			System.out.println("Ground");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] > 0) {
 						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.25 * resMul, 0.25 * resMul, 0.2) * 0.333;
@@ -388,13 +361,13 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("ground.png", ground);
-			finishProgress();
+			MapUtils.displayMap("ground.png", ground);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Hills");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(hillMap[i][j] > 0) {
 						double mul = Math.min(1, hillMap[i][j]);
@@ -408,13 +381,13 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("hills.png", hills);
-			finishProgress();
+			MapUtils.displayMap("hills.png", hills);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Mountains");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(mountainMap[i][j] > 0) {
 						double mul = Math.min(1, mountainMap[i][j]);
@@ -430,14 +403,14 @@ public class ComplexSurface {
 				}
 			}
 			
-			displayMap("mountains.png", mountains);
-			printMap("mountains.dat", mountains);
-			finishProgress();
+			MapUtils.displayMap("mountains.png", mountains);
+			MapUtils.printMap("mountains.dat", mountains);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Lakes");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(lakesMap[i][j] > 0) {
 						double mul  = Math.max(0, Math.min(1, lakesMap[i][j]));
@@ -447,13 +420,13 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("lakes.png", lakes);
-			finishProgress();
+			MapUtils.displayMap("lakes.png", lakes);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Poles");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
@@ -471,8 +444,8 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("poles.png", poles);
-			finishProgress();
+			MapUtils.displayMap("poles.png", poles);
+			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -498,15 +471,15 @@ public class ComplexSurface {
 			System.err.println(biggestPixelValue);
 			ImageIO.write(img, "png", new File("complex.png"));
 			ImageIO.write(img, "png", new File("past_outputs/" + name + ".png"));
-			printMap("complex.dat", finalNoiseMap);
+			MapUtils.printMap("complex.dat", finalNoiseMap);
 			System.out.println("Done.");
 			//long name = System.currentTimeMillis();
 			
 			System.out.println("Color Map!");
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					double continent   = Math.min(1, continentMap[i][j]);
@@ -525,44 +498,48 @@ public class ComplexSurface {
 						}else {
 							double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 							double distance = SphereUtils.distance(latitude, longitude, -90, 0);
-							distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0));
+							distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0)) * planetCircumference;
 							
 							rgb = Arrays.copyOf(lowlandColor, 3);
-							factorIn(rgb, hillMap[i][j], hillsColor);
-							factorIn(rgb, taigaMap[i][j], taigaColor);
+							MapUtils.factorInColor(rgb, hillMap[i][j], hillsColor);
+							MapUtils.factorInColor(rgb, taigaMap[i][j], taigaColor);
 							double coldnessFactor = 0;
 							if(distance <= poleRadius * 2.3) {
 								coldnessFactor = (poleRadius * 2.3) - (distance - (poleRadius * 1.333)) - (poleRadius * 1.333);
 								coldnessFactor /= (poleRadius * 2.3 - poleRadius * 1.333);
 								if(distance <= poleRadius * 1.333) coldnessFactor = 1;
 							}
+<<<<<<< dest
 							if(planetTemperature < 0) {
 								coldnessFactor = Math.max(coldnessFactor, Math.min(1, planetTemperature / 0.75));
 							}
 							if(coldnessFactor != 0) factorIn(rgb, coldnessFactor, taigaColor);
+=======
+							if(coldnessFactor != 0) MapUtils.factorInColor(rgb, coldnessFactor, taigaColor);
+>>>>>>> source
 							
 							if(finalNoiseMap[i][j] >= peaksFadeStart && desertMap[i][j] < 0.05) {
 								if(finalNoiseMap[i][j] >= peaksFadeEnd) {
-									factorIn(rgb, mountainMap[i][j], peaksColor);
+									MapUtils.factorInColor(rgb, mountainMap[i][j], peaksColor);
 								}else {
 									double mmul = (finalNoiseMap[i][j] - peaksFadeStart) / (peaksFadeEnd - peaksFadeStart);
-									factorIn(rgb, mountainMap[i][j] * (1.0 - mmul), mountainsColor);
-									factorIn(rgb, mountainMap[i][j] * mmul, peaksColor);
+									MapUtils.factorInColor(rgb, mountainMap[i][j] * (1.0 - mmul), mountainsColor);
+									MapUtils.factorIn(rgb, mountainMap[i][j] * mmul, peaksColor);
 								}
-							}else factorIn(rgb, mountainMap[i][j], mountainsColor);
+							}else MapUtils.factorInColor(rgb, mountainMap[i][j], mountainsColor);
 							
-							factorIn(rgb, desertMap[i][j], desertColor);
+							MapUtils.factorInColor(rgb, desertMap[i][j], desertColor);
 							
 							if(snowMap[i][j] > 0) {
-								factorIn(rgb, snowMap[i][j],snowColor);
+								MapUtils.factorInColor(rgb, snowMap[i][j],snowColor);
 							}
 							
-							factorIn(rgb, lakesMap[i][j], oceansColor);
+							MapUtils.factorInColor(rgb, lakesMap[i][j], oceansColor);
 						}
 						
-						factorIn(rgb, poles[i][j] * 0.75, polesColor);
+						MapUtils.factorInColor(rgb, poles[i][j] * 0.75, polesColor);
 						if(poles[i][j] != 0) {
-							factorIn(rgb, 0.75, polesColor);
+							MapUtils.factorInColor(rgb, 0.75, polesColor);
 						}
 					}
 					
@@ -579,7 +556,7 @@ public class ComplexSurface {
 					//colorMap[i][j][2] = (1.0 - continent) * oceansColor[2] + continent * rgb[2];
 				}
 			}
-			finishProgress();
+			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -595,9 +572,9 @@ public class ComplexSurface {
 			System.out.println("Done.");
 			System.out.println("Biome map");
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(poles[i][j] == 0.01) {
 						biomeMap[i][j] = biomeColorNorthPole;
@@ -654,7 +631,7 @@ public class ComplexSurface {
 					}
 				}
 			}
-			finishProgress();
+			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -673,46 +650,6 @@ public class ComplexSurface {
 			e.printStackTrace();
 			System.exit(1);
 		}
-	}
-	
-	private static void factorIn(double[] color, double multiplier, double[] newColor) {
-		multiplier = Math.min(1, multiplier);
-		color[0]   = color[0] * (1.0 - multiplier) + newColor[0] * multiplier;
-		color[1]   = color[1] * (1.0 - multiplier) + newColor[1] * multiplier;
-		color[2]   = color[2] * (1.0 - multiplier) + newColor[2] * multiplier;
-	}
-	
-	private static void printMap(String file, double[][] map) {
-		try {
-			FileOutputStream fos = new FileOutputStream(file);
-			for(int i = 0; i < map.length; i++) {
-				StringBuilder line = new StringBuilder();
-				for(int j = 0; j < map[0].length; j++) {
-					line.append(String.format("%.2f\t\t", map[i][j]));
-				}
-				line.append("\r\n");
-				fos.write(line.toString().getBytes());
-			}
-			fos.close();
-		}catch(Exception e) {
-			System.err.println("Error saving raw map data: ");
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
-	public static void displayMap(String file, double[][] map) throws Exception {
-		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_RGB);
-		for(int i = 0; i < map.length; i++) {
-			for(int j = 0; j < map[0].length; j++) {
-				double v = map[i][j];
-				int col = (int)(v * 255.0);
-				int r,g,b;
-				r = g = b = Math.max(0, Math.min(255, col));
-				img.setRGB(i, j, b | (g << 8) | (r << 16));
-			}
-		}
-		ImageIO.write(img, "png", new File(file));
 	}
 	
 	private static final int[] fixed_seed = new int[] { // 2,698,966,514,655,541,623 300 2.6 8 1 42
