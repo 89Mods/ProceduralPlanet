@@ -49,14 +49,14 @@ public class ComplexSurface {
 		return 1.0 / (1.0 + Math.exp(-x));
 	}
 	
-	//IDEA: OpenCL perlin noise
+	//IDEA: OpenCL perlin noise, Change noise stretch using another noise function.
 	public static void main(String[] args) {
 		try {
 			/*
 			 * Input Parameters
 			 */
 			final int width = 4096;
-			final int height = 2048;
+			final int height = width / 2;
 			final int planetRadius = 600000;
 			final double planetCircumference = planetRadius * 2.0 * Math.PI;
 			final double resMul = 600000.0 / (double)planetRadius * 0.85;
@@ -69,8 +69,8 @@ public class ComplexSurface {
 			final double hillsFadeEnd = 0.35;
 			final double mountainNoiseScale = 0.17;
 			final double mountainWorleyScale = 0.015;
-			final double basePeaksFadeStart = 0.35;
-			final double basePeaksFadeEnd = 0.45;
+			final double basePeaksFadeStart = 0.45;
+			final double basePeaksFadeEnd = 0.55;
 			final double baseDesertFadeStart = 45;
 			final double baseDesertFadeEnd = 20;
 			final double baseSnowFadeStart = 0.5;
@@ -214,9 +214,9 @@ public class ComplexSurface {
 					distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0));
 					double val = (NoiseUtils.sampleSpherableNoise(mountainNoise, i, j, width, height, 0.18 * resMul, 0.18 * resMul, 0.25) + 0.375);
 					val = Math.max(0, Math.min(1, Math.abs(val)));
-					if(distanceMap[i][j] < hillsFadeEnd && val > 0.30) {
-						double h = val - 0.30;
-						h = h * 1.428 * 5.0;
+					if(distanceMap[i][j] < hillsFadeEnd && val > 0.34) {
+						double h = val - 0.34;
+						h = h * 1.515151 * 5.0;
 						hillMap[i][j] = h;
 						hillMap[i][j] *= continentMap[i][j];
 						if(distanceMap[i][j] > hillsFadeStart) {
@@ -225,9 +225,9 @@ public class ComplexSurface {
 							hillMap[i][j] *= amul;
 						}
 					}
-					if(distanceMap[i][j] < mountainsFadeEnd && val > 0.465) {
-						double h = val - 0.465;
-						h = h * 1.869 * 5.0;
+					if(distanceMap[i][j] < mountainsFadeEnd && val > 0.475) {
+						double h = val - 0.475;
+						h = h * 1.904 * 5.0;
 						mountainMap[i][j] = h;
 						mountainMap[i][j] *= continentMap[i][j];
 						if(distanceMap[i][j] > mountainsFadeStart) {
@@ -377,8 +377,8 @@ public class ComplexSurface {
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] > 0) {
 						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.25 * resMul, 0.25 * resMul, 0.2) * 0.333;
-						val += NoiseUtils.sampleSpherableNoise(groundNoiseMediumDetail, i, j, width, height, 0.17 * resMul, 0.17 * resMul, 0.2) * 0.333;
-						val += NoiseUtils.sampleSpherableNoise(groundNoiseSmallDetail, i, j, width, height, 0.07 * resMul, 0.07 * resMul, 0.2) * 0.333;
+						val += NoiseUtils.sampleSpherableNoise(groundNoiseMediumDetail, i, j, width, height, 0.16 * resMul, 0.16 * resMul, 0.2) * 0.333;
+						val += NoiseUtils.sampleSpherableNoise(groundNoiseSmallDetail, i, j, width, height, 0.06 * resMul, 0.06 * resMul, 0.2) * 0.333;
 						val += 0.25;
 						val = Math.abs(val);
 						val *= 0.25;
@@ -398,9 +398,10 @@ public class ComplexSurface {
 				for(int j = 0; j < height; j++) {
 					if(hillMap[i][j] > 0) {
 						double mul = Math.min(1, hillMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(hillNoise, i, j, width, height, 0.17 * resMul, 0.17 * resMul, 0.5);
+						double val = NoiseUtils.sampleSpherableNoise(hillNoise, i, j, width, height, 0.16 * resMul, 0.16 * resMul, 0.5);
 						val += 0.25;
-						val *= mul * 0.4;
+						val = Math.abs(val);
+						val *= mul * 0.35;
 						
 						hills[i][j] = val;
 					}else {
@@ -419,7 +420,7 @@ public class ComplexSurface {
 					if(mountainMap[i][j] > 0) {
 						double mul = Math.min(1, mountainMap[i][j]);
 						double val = NoiseUtils.sampleSpherableNoise(mountainsNoise, i, j, width, height, mountainNoiseScale * resMul, mountainNoiseScale * resMul, 0.6);
-						val = Math.abs(val) * 2.8;
+						val = Math.abs(val) * 3.8;
 						
 						double mul2 =  Math.max(0, Math.min(1, (1.0 - NoiseUtils.sampleSpherableNoise(mountainWorley, i, j, width, height, mountainWorleyScale * resMul, mountainWorleyScale * resMul, 0.01)) * 2.0 + 0.1));
 						

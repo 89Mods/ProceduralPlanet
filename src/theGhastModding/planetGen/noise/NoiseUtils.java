@@ -34,12 +34,12 @@ public class NoiseUtils {
 		return noise.sample(x + xDistort, y + yDistort, z + zDistort, w + wDistort);
 	}
 	
-	private static double distort(NoiseFunction noise, double x, double y, double z) {
+	public static double distort(NoiseFunction noise, double x, double y, double z) {
 		double wiggleDensity = 4.7;
 		return noise.sample(x * wiggleDensity, y * wiggleDensity, z * wiggleDensity);
 	}
 	
-	private static double distort(NoiseFunction4D noise, double x, double y, double z, double w) {
+	public static double distort(NoiseFunction4D noise, double x, double y, double z, double w) {
 		double wiggleDensity = 4.7;
 		return noise.sample(x * wiggleDensity, y * wiggleDensity, z * wiggleDensity, w * wiggleDensity);
 	}

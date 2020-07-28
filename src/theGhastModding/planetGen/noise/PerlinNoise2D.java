@@ -48,7 +48,7 @@ public class PerlinNoise2D extends NoiseFunction {
 		double dot0 = sx * noiseMap[nodex][nodey][0] + sy * noiseMap[nodex][nodey][1];
 		double dot1 = (sx - 1) * noiseMap[nodex1][nodey][0] + sy * noiseMap[nodex1][nodey][1];
 		double dot2 = sx * noiseMap[nodex][nodey1][0] + (sy - 1) * noiseMap[nodex][nodey1][1];
-		double dot3 = (sx - 1) * noiseMap[nodex1][nodey1][0] * noiseMap[nodex1][nodey1][1];
+		double dot3 = (sx - 1) * noiseMap[nodex1][nodey1][0] + (sy - 1) * noiseMap[nodex1][nodey1][1];
 		
 		double ix0 = lerp(dot0, dot1, wx);
 		double ix1 = lerp(dot2, dot3, wx);
