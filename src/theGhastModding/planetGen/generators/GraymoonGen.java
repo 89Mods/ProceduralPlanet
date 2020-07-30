@@ -1,14 +1,20 @@
 package theGhastModding.planetGen.generators;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Arrays;
-
 import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
+import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
+import theGhastModding.planetGen.noise.OctaveWorley;
+import theGhastModding.planetGen.utils.CraterGenerator;
+import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
+import theGhastModding.planetGen.utils.CraterGenerator.CraterDistributionSettings;
+import theGhastModding.planetGen.utils.MapUtils;
+import theGhastModding.planetGen.utils.ProgressBars;
 
 public class GraymoonGen {
 	
@@ -16,111 +22,398 @@ public class GraymoonGen {
 		try {
 			boolean test = true;
 			RanMT rng = test ? new RanMT(fixed_seed) : new RanMT().seedCompletely();
-			OctaveNoise3D continentNoise = new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			/*int cntr = 0;
-			for(int i:rng.getLongSeed()) {
-				System.out.print(i + ",");
-				cntr++;
-				cntr %= 16;
-				if(cntr == 0) {
-					System.out.println();
-				}
-			}*/
-			
-			int width = 4096;
-			int height = 2048;
-			int planetRadius = 200000;
-			double resMul = 200000.0 / (double)planetRadius;
-			
-			double continentStretch = 2.0;
-			double continentMul = 5.0;
-			
-			double groundLargeDetailStretch = 0.35;
-			double groundDetailMul = 1.0;
-			
-			double[][] continentMap = new double[width][height];
-			System.out.println("Continents & Biomes");
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					continentMap[i][j] = NoiseUtils.sampleSpherableNoise(continentNoise, i, j, width, height, continentStretch * resMul, continentStretch * resMul, 0.25) * continentMul;
-					continentMap[i][j] = 1.0 - Math.max(0, Math.min(1, continentMap[i][j]));
+			if(!test) {
+				int cntr = 0;
+				for(int i:rng.getLongSeed()) {
+					System.out.print(i + ",");
+					cntr++;
+					cntr %= 16;
+					if(cntr == 0) {
+						System.out.println();
+					}
 				}
 			}
 			
+			final int width = 4096;
+			final int height = 2048;
+			final int planetRadius = 200000;
+			final double resMul = 200000.0 / (double)planetRadius * 0.85;
+			final double mariaLatitudeRange = 80;
+			final double mariaLongitudeRange = 110;
+			final double mariaFadeRange = 30;
+			final int mariaCraterCount = 6;
+			final int smallCraterCount = 8192+128;
+			final int hugeCraterCount = 3;
+			final double craterMaxsize = 128;
+			final double craterMinsize = 4;
+			final double craterMaxstrength = 0.6;
+			final double craterMinstrength = 0.05;
+			final double mariaCraterMaxsize = 32;
+			final double mariaCraterMinsize = 4;
+			final double mariaCraterMaxstrength = 0.2;
+			final double mariaCraterMinstrength = 0.05;
+			final int craterFlattenedStart = 14;
+			final int craterFlattenedEnd = 28;
+			final int craterRingThreshold = 96;
+			
+			final double[] normalColor =      MapUtils.RGB(new Color(85, 85, 85));
+			final double[] mountainsColor =   MapUtils.RGB(new Color(101, 101, 101));
+			final double[] mariasColor =      MapUtils.RGB(new Color(52, 52, 52));
+			
+			final double[] normalBiomeColor =    MapUtils.RGB(new Color(150, 150, 150));
+			final double[] mountainsBiomeColor = MapUtils.RGB(new Color(180, 180, 180));
+			final double[] mariasBiomeColor =    MapUtils.RGB(new Color(80, 80, 80));
+			
+			long name = System.currentTimeMillis();
+			
+			CraterConfig bowlCraterConfig =      new CraterConfig(0, 0, 0.2, 0.4, 1.0, 3.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, craterRingThreshold, 1.0);
+			CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, craterRingThreshold, 0.9);
+			CraterConfig mariaCraterConfig =     new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
+			
+			OctaveNoise3D mariaNoise =              new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
+			OctaveNoise3D mountainNoise =           new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
+			OctaveNoise3D groundNoiseLargeDetail =  new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
+			OctaveNoise3D groundNoiseMediumDetail = new OctaveNoise3D(rng, 24, 24, 24, 8, 2.0, 0.6);
+			OctaveNoise3D mountainsNoise =          new OctaveNoise3D(rng, 24, 24, 24, 9, 2.0, 0.6);
+			NoiseConfig craterMountainsNoise =      new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5), true, 1.5, 0.17, 0.6, 0.0);
+			OctaveNoise3D secondaryNoise =          new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5);
+			OctaveWorley colorNoise =               new OctaveWorley(rng, 32, 32, 32, 5, 2.0, 0.5);
+			
+			double[][] mariaMap =      new double[width][height];
+			double[][] marias   =      new double[width][height];
+			double[][] mariaCraters =  new double[width][height];
+			double[][] mountainMap =   new double[width][height];
+			double[][] ground =        new double[width][height];
+			double[][] mountains =     new double[width][height];
+			double[][] finalNoiseMap = new double[width][height];
+			double[][][] colorMap =    new double[width][height][3];
+			double[][][] biomeMap =    new double[width][height][3];
+
+			System.out.println("Marias");
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i / 2, width);
+				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
+				double mul = 1;
+				if(mariaLongitudeRange < 180) {
+					mul = Math.abs(longitude);
+					if(mul > mariaLongitudeRange - mariaFadeRange && mul < mariaLongitudeRange) {
+						mul = 1.0 - (mul - (mariaLongitudeRange - mariaFadeRange)) / mariaFadeRange;
+					}else if(mul >= mariaLongitudeRange) mul = 0;
+					else if(mul <= mariaLongitudeRange - mariaFadeRange) mul = 1;
+				}
 				for(int j = 0; j < height; j++) {
-					if(continentMap[i][j] < 0) continue;
+					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
+					double mul2 = 1;
+					if(mariaLatitudeRange < 90) {
+						mul2 = Math.abs(latitude);
+						if(mul2 > mariaLatitudeRange - mariaFadeRange && mul2 < mariaLatitudeRange) {
+							mul2 = 1.0 - (mul2 - (mariaLatitudeRange - mariaFadeRange)) / mariaFadeRange;
+						}else if(mul2 >= mariaLatitudeRange) mul2 = 0;
+						else if(mul2 <= mariaLatitudeRange - mariaFadeRange) mul2 = 1;
+					}
+					
+					mariaMap[i][j] = (NoiseUtils.sampleSpherableNoise(mariaNoise, i, j, width, height, 2.0 * resMul, 2.0 * resMul, 0.25) + 0.1) * mul * mul2 * 3.0;
+					mariaMap[i][j] *= mariaMap[i][j];
+					mariaMap[i][j] = Math.max(0, Math.min(1, mariaMap[i][j]));
 					
 				}
 			}
+			//MapUtils.displayMap("mariaMap.png", mariaMap);
+			
+			for(int i = 0; i < marias.length; i++) {
+				for(int j = 0; j < marias[0].length; j++) {
+					marias[i][j] = (1.0 - mariaMap[i][j]) * 0.4;
+				}
+			}
+			
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					if(marias[i][j] < 0.23) {
+						marias[i][j] = 0.23;
+					}else {
+						marias[i][j] *= ((marias[i][j] - 0.23) * 3.0) + 1.0;
+						marias[i][j] = Math.min(0.4, marias[i][j]);
+					}
+				}
+			}
+			
+			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) mariaCraters[i][j] = 0.4;
+			CraterConfig mariaShapeCraterConfig = new CraterConfig();
+			mariaShapeCraterConfig.setPerturbStrength(0.2).setPerturbScale(0.4).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
+			mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
+			mariaShapeCraterConfig.setFullPeakSize(10).setRingThreshold(128).setRingFunctMul(1);
+			for(int i = 0; i < mariaCraterCount; i++) {
+				ProgressBars.printProgress(i + mariaCraterCount, mariaCraterCount * 2);
+				double lat = (rng.nextDouble() * 2 - 1) * (mariaLatitudeRange - mariaFadeRange / 2);
+				double lon = (rng.nextDouble() * 2 - 1) * (mariaLongitudeRange - mariaFadeRange / 2);
+				int px = (int)((lon + 180.0) / 360.0 * width);
+				int py = (int)((lat + 90.0) / 180.0 * height);
+				double val = marias[px][py];
+				if(val > 0.3 && val < 0.4) {
+					mariaShapeCraterConfig.setSize(200 + rng.nextInt(32)).setCraterStrength(0.5);
+					CraterGenerator.genCrater(mariaCraters, lat, lon, mariaShapeCraterConfig, null, rng);
+				}else {
+					i--;
+					continue;
+				}
+			}
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					mariaCraters[i][j] = Math.max(0.23, mariaCraters[i][j]);
+					marias[i][j] = Math.min(marias[i][j], mariaCraters[i][j]);
+					
+					//Post-scale depth because I'm too lazy to re-do all of the above code
+					if(marias[i][j] > 0.25) {
+						marias[i][j] = (marias[i][j] - 0.25) * 6.6666666;
+						marias[i][j] = CraterGenerator.biasFunction(marias[i][j], -0.65);
+						marias[i][j] *= marias[i][j];
+						marias[i][j] = marias[i][j] / 6.666666 + 0.25;
+					}
+					
+					marias[i][j] /= 0.4;
+					marias[i][j] = marias[i][j] * 0.3 + 0.1;
+				}
+			}
+			ProgressBars.printProgress(width - 1, width);
+			ProgressBars.finishProgress();
+			
+			MapUtils.displayMap("marias.png", marias);
+			
+			System.out.println("Biomes");
+			ProgressBars.printBar();
+			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i, width);
+				for(int j = 0; j < height; j++) {
+					double mariaMul = Math.min(1, (marias[i][j] - 0.23) * 5.882352941);
+					
+					double val = (NoiseUtils.sampleSpherableNoise(mountainNoise, i, j, width, height, 0.54 * resMul, 0.54 * resMul, 0.25) + 0.375);
+					val = Math.max(0, Math.min(1, Math.abs(val)));
+					if(val > 0.44) {
+						double h = val - 0.44;
+						h = h * 1.785 * 5.0;
+						mountainMap[i][j] = h;
+						mountainMap[i][j] *= mariaMul;
+					}
+				}
+			}
+			ProgressBars.finishProgress();
 			
 			BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
-					double v = continentMap[i][j];
-					int col = (int)(v * 255.0);
 					int r,g,b;
-					r = g = b = Math.max(0, Math.min(255, col));
-					
+					r = g = b = 0;
+					if(mountainMap[i][j] > 0) {
+						double mul = (1.0 - Math.max(0, Math.min(1, mountainMap[i][j])));
+						g = (int)(g * mul);
+						b = (int)(b * mul);
+						r = (int)((1.0 - mul) * 255);
+					}
+					r = Math.max(0, Math.min(255, r));
+					g = Math.max(0, Math.min(255, g));
+					b = Math.max(0, Math.min(255, b));
 					img.setRGB(i, j, b | (g << 8) | (r << 16));
 				}
 			}
 			ImageIO.write(img, "png", new File("continents.png"));
 			
-			/*System.out.println("Ground");
-			OctaveNoise3D groundNoiseLargeDetail = new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.5);
-			double[][] ground = new double[width][height];
+			System.out.println("Ground");
+			ProgressBars.printBar();
+			double inMariaMul = 0.1;
 			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					if(continentMap[i][j] > 0) {
-						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, groundLargeDetailStretch * resMul, groundLargeDetailStretch * resMul, 0.31);
-						val = Math.abs(val) * 0.1 + 0.2 * continentMap[i][j];
-						//val += 0.05;
+					double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
+					
+					if(mariaMul > 0) {
+						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.65 * resMul, 0.65 * resMul, 0.5) * 0.5;
+						val += NoiseUtils.sampleSpherableNoise(groundNoiseMediumDetail, i, j, width, height, 0.45 * resMul, 0.45 * resMul, 0.75) * 0.5;
+						val += 0.25;
+						val = Math.abs(val);
+						val *= 0.4;
+						val *= mariaMul;
 						ground[i][j] = val;
-					} else {
-						double val = Math.abs(NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, groundLargeDetailStretch * resMul, groundLargeDetailStretch * resMul, 0.31)) * 0.1;
-						if(val < 0) val = 0;
+					}
+					if(mariaMul < inMariaMul) {
+						mariaMul = inMariaMul - mariaMul;
+						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.65 * resMul, 0.65 * resMul, 0.5);
+						val += 0.25;
+						val = Math.abs(val);
+						val *= 0.3;
+						val *= inMariaMul;
 						ground[i][j] = val;
 					}
 				}
 			}
-			ComplexSurface.displayMap("ground.png", ground);*/
+			MapUtils.displayMap("ground.png", ground);
+			ProgressBars.finishProgress();
+			
+			System.out.println("Mountains");
+			ProgressBars.printBar();
+			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i, width);
+				for(int j = 0; j < height; j++) {
+					if(mountainMap[i][j] > 0) {
+						double mul = Math.min(1, mountainMap[i][j]);
+						double val = NoiseUtils.sampleSpherableNoise(mountainsNoise, i, j, width, height, 0.72 * resMul, 0.72 * resMul, 0.43);
+						val = Math.abs(val);
+						val *= 1.25;
+						
+						mountains[i][j] = val * mul;
+					}else {
+						mountains[i][j] = 0;
+					}
+				}
+			}
+			MapUtils.displayMap("mountains.png", mountains);
+			ProgressBars.finishProgress();
+			
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					finalNoiseMap[i][j] = ground[i][j] + mountains[i][j] + 0.3;
+				}
+			}
+			MapUtils.displayMap("complex.png", finalNoiseMap);
 			
 			System.out.println("Craters");
-			double[][] craters = new double[width][height];
-			for(int i = 0; i < width; i++) Arrays.fill(craters[i], 0.6);
-			int numCraters = 50;
-			double craterStrength = 0.3;
-			for(int i = 0; i < numCraters; i++) {
-				double craterX = rng.nextInt(width);
-				double craterY = rng.nextInt(height);
-				int craterRadius = (int)Math.ceil(rng.nextDouble() * 20 + 20);
-				int outerRadius = (int)(craterRadius * 1.1);
-				for(int j = 0; j < craterRadius*2; j++) {
-					for(int k = 0; k < craterRadius*2; k++) {
-						int x = j - craterRadius;
-						int y = k - craterRadius;
-						
-						int pixelX = (x + (int)craterX);
-						if(pixelX < 0) pixelX += width;
-						pixelX %= width;
-						int pixelY = (y + (int)craterY);
-						if(pixelY < 0) pixelY += height;
-						pixelY %= height;
-						
-						double dist = Math.sqrt(x * x + y * y);
-						if(dist <= craterRadius) {
-							double strength = Math.max(0, Math.cos(dist / (double)craterRadius * Math.PI)) * craterStrength;
-							
-							craters[pixelX][pixelY] -= strength;
-						}else if(dist <= outerRadius) {
-							
+			ProgressBars.printBar();
+			boolean[][] craterDistr = new boolean[1024][512];
+			boolean[][] mariaCraterDistr = new boolean[1024][512];
+			int mariaCnt = 0;
+			for(int i = 0; i < 1024; i++) {
+				int ix = (int)((double)i / 1024.0 * width);
+				for(int j = 0; j < 512; j++) {
+					int iy = (int)((double)j / 512.0 * height);
+					double val = marias[ix][iy];
+					craterDistr[i][j] = val >= 0.36;
+					mariaCraterDistr[i][j] = val < 0.36;
+					if(val < 0.35) mariaCnt++;
+				}
+			}
+			double mariaRatio = (double)mariaCnt / (double)(1024 * 512);
+			int inMariaCraterCount = (int)(mariaRatio * smallCraterCount);
+			double cS = bowlCraterConfig.ringThreshold / craterMaxsize * (craterMaxstrength - craterMinstrength) + craterMinstrength;
+			CraterDistributionSettings cds = new CraterDistributionSettings(smallCraterCount - inMariaCraterCount, craterMinsize, bowlCraterConfig.ringThreshold - 1, craterMinstrength, cS, craterFlattenedStart, craterFlattenedEnd, craterMountainsNoise, 0.76);
+			CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, bowlCraterConfig, flattenedCraterConfig, cds, rng);
+			ProgressBars.printProgress(24, 75);
+			cds = new CraterDistributionSettings(hugeCraterCount, bowlCraterConfig.ringThreshold + 0.001, craterMaxsize, cS, craterMaxstrength, craterFlattenedStart, craterFlattenedEnd, craterMountainsNoise, 0.5);
+			CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, bowlCraterConfig, flattenedCraterConfig, cds, rng);
+			ProgressBars.printProgress(49, 75);
+			cds = new CraterDistributionSettings(inMariaCraterCount, mariaCraterMinsize, mariaCraterMaxsize, mariaCraterMinstrength, mariaCraterMaxstrength, 0, 1000000, craterMountainsNoise, 0.7);
+			CraterGenerator.distributeCraters(mariaCraterDistr, finalNoiseMap, mariaCraterConfig, mariaCraterConfig, cds, rng);
+			ProgressBars.printProgress(74, 75);
+			ProgressBars.finishProgress();
+			
+			System.out.println("Secondary Noise");
+			ProgressBars.printBar();
+			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i, width);
+				for(int j = 0; j < height; j++) {
+					double val = NoiseUtils.sampleSpherableNoise(secondaryNoise, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.3);
+					val += 0.25;
+					val = Math.abs(val);
+					val *= 0.12;
+					if(marias[i][j] < 0.4) {
+						val *= Math.max(0.075, (marias[i][j] / 0.4));
+					}
+					finalNoiseMap[i][j] += val;
+				}
+			}
+			ProgressBars.finishProgress();
+			
+			int biggestPixelValue = 0;
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					double v = finalNoiseMap[i][j];
+					int col  = (int)(v * 255.0);
+					int r,g,b;
+					r = g = b = Math.max(0, Math.min(255, col));
+					if(r > biggestPixelValue) {
+						biggestPixelValue = r;
+					}
+					img.setRGB(i, j, b | (g << 8) | (r << 16));
+				}
+			}
+			System.err.println(biggestPixelValue);
+			ImageIO.write(img, "png", new File("graymun.png"));
+			ImageIO.write(img, "png", new File("past_outputs/" + name + ".png"));
+			System.out.println("Done.");
+			
+			System.out.println("Color Map!");
+			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			ProgressBars.printBar();
+			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i, width);
+				for(int j = 0; j < height; j++) {
+					double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
+					if(mariaMul < 0) mariaMul = 0;
+					double mountainMul = Math.max(0, Math.min(1, mountainMap[i][j]));
+					double[] rgb = new double[] {
+							mariaMul * (mountainMul * mountainsColor[0] + (1.0 - mountainMul) * normalColor[0]) + (1.0 - mariaMul) * mariasColor[0],
+							mariaMul * (mountainMul * mountainsColor[1] + (1.0 - mountainMul) * normalColor[1]) + (1.0 - mariaMul) * mariasColor[1],
+							mariaMul * (mountainMul * mountainsColor[2] + (1.0 - mountainMul) * normalColor[2]) + (1.0 - mariaMul) * mariasColor[2],
+					};
+					double mul = NoiseUtils.sampleSpherableNoise(colorNoise, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.75);
+					mul = Math.abs(mul) * 1.25 + 0.5;
+					if(mul > mul) mul = 1;
+					rgb[0] = mul * rgb[0];
+					rgb[1] = mul * rgb[1];
+					rgb[2] = mul * rgb[2];
+					double heightCol = finalNoiseMap[i][j];
+					heightCol *= 0.1;
+					rgb[0] += heightCol;
+					rgb[1] += heightCol;
+					rgb[2] += heightCol;
+					
+					colorMap[i][j] = rgb;
+				}
+			}
+			ProgressBars.finishProgress();
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
+					int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
+					int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
+					
+					img.setRGB(i, j, b | (g << 8) | (r << 16));
+				}
+			}
+			ImageIO.write(img, "png", new File("colors.png"));
+			ImageIO.write(img, "png", new File("past_outputs/" + name + "_colors.png"));
+			System.out.println("Done.");
+			
+			System.out.println("Biome map");
+			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			ProgressBars.printBar();
+			for(int i = 0; i < width; i++) {
+				ProgressBars.printProgress(i, width);
+				for(int j = 0; j < height; j++) {
+					if(marias[i][j] < 0.35) {
+						biomeMap[i][j] = mariasBiomeColor;
+					}else {
+						if(mountainMap[i][j] > 0.25) {
+							biomeMap[i][j] = mountainsBiomeColor;
+						}else {
+							biomeMap[i][j] = normalBiomeColor;
 						}
 					}
 				}
 			}
-			ComplexSurface.displayMap("craters.png", craters);
+			ProgressBars.finishProgress();
 			
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					int r = (int)Math.max(0, Math.min(255, biomeMap[i][j][0] * 255.0));
+					int g = (int)Math.max(0, Math.min(255, biomeMap[i][j][1] * 255.0));
+					int b = (int)Math.max(0, Math.min(255, biomeMap[i][j][2] * 255.0));
+					
+					img.setRGB(i, j, b | (g << 8) | (r << 16));
+				}
+			}
+			ImageIO.write(img, "png", new File("biomes.png"));
+			ImageIO.write(img, "png", new File("past_outputs/" + name + "_biomes.png"));
+			System.out.println("Done.");
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();

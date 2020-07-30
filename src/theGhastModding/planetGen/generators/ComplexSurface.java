@@ -12,37 +12,14 @@ import theGhastModding.planetGen.noise.NoiseFunction;
 import theGhastModding.planetGen.noise.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.WorleyNoise;
+import theGhastModding.planetGen.utils.MapUtils;
+import theGhastModding.planetGen.utils.ProgressBars;
 import theGhastModding.planetGen.utils.SphereUtils;
 
 public class ComplexSurface {
 	
 	private static double[] RGB(Color c) {
 		return new double[] {c.getRed() / 255.0, c.getGreen() / 255.0, c.getBlue() / 255.0};
-	}
-	
-	private static int printed;
-	
-	private static void printBar() {
-		System.out.print("|");
-		for(int i = 0; i < 98; i++) System.out.print("-");
-		System.out.println("|");
-		printed = 0;
-	}
-	
-	private static void printProgress(int i, int max) {
-		int percentage = (int)((double)i / (double)max * 100.0);
-		if(percentage >= printed) {
-			int cnt = percentage - printed;
-			for(int j = 0; j < cnt; j++) {
-				System.out.print(">");
-				printed++;
-			}
-		}
-	}
-	
-	private static void finishProgress() {
-		System.out.println(">");
-		printed = 0;
 	}
 	
 	private static double sigmoid(double x) {
@@ -58,7 +35,6 @@ public class ComplexSurface {
 			final int width = 4096;
 			final int height = width / 2;
 			final int planetRadius = 600000;
-			final double planetCircumference = planetRadius * 2.0 * Math.PI;
 			final double resMul = 600000.0 / (double)planetRadius * 0.85;
 			final double baseOceanFactor = 0;
 			final double basePoleRadius = 0.106;
@@ -191,21 +167,21 @@ public class ComplexSurface {
 			double[][][] biomeMap =    new double[width][height][3];
 			
 			System.out.println("Continents & Biomes");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					continentMap[i][j] = (NoiseUtils.sampleSpherableNoise(continentNoise, i, j, width, height, 0.85 * resMul, 0.85 * resMul, 0.25) + oceanFactor / 2.0) * 12.0;
 					distanceMap[i][j] = continentMap[i][j] / 12.0;
 					continentMap[i][j] = /*1.0 - */Math.max(0, Math.min(1, continentMap[i][j]));
 				}
 			}
-			finishProgress();
-			displayMap("distances.png", distanceMap);
+			ProgressBars.finishProgress();
+			MapUtils.displayMap("distances.png", distanceMap);
 			
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] < 0) continue;
@@ -322,7 +298,7 @@ public class ComplexSurface {
 					}*/
 				}
 			}
-			finishProgress();
+			ProgressBars.finishProgress();
 			
 			BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 			for(int i = 0; i < width; i++) {
@@ -371,9 +347,9 @@ public class ComplexSurface {
 			//System.exit(0);
 			
 			System.out.println("Ground");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] > 0) {
 						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.25 * resMul, 0.25 * resMul, 0.2) * 0.333;
@@ -388,13 +364,13 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("ground.png", ground);
-			finishProgress();
+			MapUtils.displayMap("ground.png", ground);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Hills");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(hillMap[i][j] > 0) {
 						double mul = Math.min(1, hillMap[i][j]);
@@ -409,13 +385,13 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("hills.png", hills);
-			finishProgress();
+			MapUtils.displayMap("hills.png", hills);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Mountains");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(mountainMap[i][j] > 0) {
 						double mul = Math.min(1, mountainMap[i][j]);
@@ -431,14 +407,13 @@ public class ComplexSurface {
 				}
 			}
 			
-			displayMap("mountains.png", mountains);
-			printMap("mountains.dat", mountains);
-			finishProgress();
+			MapUtils.displayMap("mountains.png", mountains);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Lakes");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(lakesMap[i][j] > 0) {
 						double mul  = Math.max(0, Math.min(1, lakesMap[i][j]));
@@ -448,13 +423,13 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("lakes.png", lakes);
-			finishProgress();
+			MapUtils.displayMap("lakes.png", lakes);
+			ProgressBars.finishProgress();
 			
 			System.out.println("Poles");
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
@@ -472,8 +447,8 @@ public class ComplexSurface {
 					}
 				}
 			}
-			displayMap("poles.png", poles);
-			finishProgress();
+			MapUtils.displayMap("poles.png", poles);
+			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -499,15 +474,14 @@ public class ComplexSurface {
 			System.err.println(biggestPixelValue);
 			ImageIO.write(img, "png", new File("complex.png"));
 			ImageIO.write(img, "png", new File("past_outputs/" + name + ".png"));
-			printMap("complex.dat", finalNoiseMap);
 			System.out.println("Done.");
 			//long name = System.currentTimeMillis();
 			
 			System.out.println("Color Map!");
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					double continent   = Math.min(1, continentMap[i][j]);
@@ -580,7 +554,7 @@ public class ComplexSurface {
 					//colorMap[i][j][2] = (1.0 - continent) * oceansColor[2] + continent * rgb[2];
 				}
 			}
-			finishProgress();
+			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -596,9 +570,9 @@ public class ComplexSurface {
 			System.out.println("Done.");
 			System.out.println("Biome map");
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			printBar();
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) {
-				printProgress(i, width);
+				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(poles[i][j] == 0.01) {
 						biomeMap[i][j] = biomeColorNorthPole;
@@ -655,7 +629,7 @@ public class ComplexSurface {
 					}
 				}
 			}
-			finishProgress();
+			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -681,39 +655,6 @@ public class ComplexSurface {
 		color[0]   = color[0] * (1.0 - multiplier) + newColor[0] * multiplier;
 		color[1]   = color[1] * (1.0 - multiplier) + newColor[1] * multiplier;
 		color[2]   = color[2] * (1.0 - multiplier) + newColor[2] * multiplier;
-	}
-	
-	private static void printMap(String file, double[][] map) {
-		try {
-			FileOutputStream fos = new FileOutputStream(file);
-			for(int i = 0; i < map.length; i++) {
-				StringBuilder line = new StringBuilder();
-				for(int j = 0; j < map[0].length; j++) {
-					line.append(String.format("%.2f\t\t", map[i][j]));
-				}
-				line.append("\r\n");
-				fos.write(line.toString().getBytes());
-			}
-			fos.close();
-		}catch(Exception e) {
-			System.err.println("Error saving raw map data: ");
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
-	public static void displayMap(String file, double[][] map) throws Exception {
-		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_RGB);
-		for(int i = 0; i < map.length; i++) {
-			for(int j = 0; j < map[0].length; j++) {
-				double v = map[i][j];
-				int col = (int)(v * 255.0);
-				int r,g,b;
-				r = g = b = Math.max(0, Math.min(255, col));
-				img.setRGB(i, j, b | (g << 8) | (r << 16));
-			}
-		}
-		ImageIO.write(img, "png", new File(file));
 	}
 	
 	private static final int[] fixed_seed = new int[] { // 2,698,966,514,655,541,623 300 2.6 8 1 42

@@ -140,7 +140,12 @@ public class CraterGenerator {
 	//strength *= 1.0 / size
 	public static boolean genCrater(double[][] map, double lat, double lon, CraterConfig cc, NoiseConfig peakNoise, Random rng) {
 		double baseHeight = map[(int)((lon + 180.0) / 360.0 * map.length)][(int)((lat + 90.0) / 180.0 * map[0].length)];
-		if(baseHeight < cc.craterStrength * 1.1) return false;
+		double th = cc.craterStrength * 1.1;
+		if(cc.floorHeight >= 0) return false;
+		if(cc.floorHeight > -1) {
+			th *= Math.abs(cc.floorHeight);
+		}
+		if(baseHeight < th) return false;
 		double s = 1.0 / cc.size;
 		double perturbStrength = cc.perturbStrength * cc.size;
 		double ejectaPerturbStrength = cc.ejectaPerturbStrength * cc.size;
@@ -229,7 +234,7 @@ public class CraterGenerator {
 	}
 	
 	// Thanks to www.iquilezles.org/www/articles/smin/smin.htm and https://www.youtube.com/watch?v=lctXaT9pxA0
-	private static double smoothMin(double a, double b, double k) {
+	public static double smoothMin(double a, double b, double k) {
 		double h = Math.max(0, Math.min(1, (b - a + k) / (2 * k)));
 		return a * h + b * (1.0 - h) - k * h * (1.0 - h);
 	}
@@ -393,9 +398,20 @@ public class CraterGenerator {
 		return (rng.nextDouble() * 2.0 - 1.0) * bias;
 	}
 	
-	public static void distributeCraters(double[][] map, CraterConfig bowlCraterConfig, CraterConfig flattenedCraterConfig, CraterDistributionSettings settings, Random rng) {
+	public static void distributeCraters(boolean[][] distributionMap, double[][] map, CraterConfig bowlCraterConfig, CraterConfig flattenedCraterConfig, CraterDistributionSettings settings, Random rng) {
 		CraterConfig finalCraterConfig =     new CraterConfig();
+		int maxTries = settings.craterCount;
+		int tries = 0;
 		for(int i = 0; i < settings.craterCount; i++) {
+			double lat = rng.nextDouble() * 160.0 + 10.0;
+			double lon = rng.nextDouble() * 360.0;
+			boolean shouldPlace = distributionMap[(int)(lon / 360.0 * distributionMap.length)][(int)(lat / 180.0 * distributionMap[0].length)];
+			if(!shouldPlace) {
+				i--;
+				tries++;
+				if(tries >= maxTries) break;
+				continue;
+			}
 			double size = rng.nextDouble();
 			size = CraterGenerator.biasFunction(size, settings.distributionBias);
 			double cSize = size * (settings.maxsize - settings.minsize);
@@ -422,8 +438,6 @@ public class CraterGenerator {
 			finalCraterConfig.setRingFunctMul(bowlCraterConfig.ringFunctMul * bMul + flattenedCraterConfig.ringFunctMul * fMul + biasedRNG(rng, settings.ringFunctRNGBias));
 			finalCraterConfig.setFullPeakSize(bowlCraterConfig.fullPeakSize + biasedRNG(rng, settings.fullPeakRNGBias));
 			finalCraterConfig.setRingThreshold(bowlCraterConfig.ringThreshold);
-			double lat = rng.nextDouble() * 160.0 + 10.0;
-			double lon = rng.nextDouble() * 360.0;
 			genCrater(map, lat - 90.0, lon - 180.0, finalCraterConfig, settings.mountainsNoise, rng);
 		}
 	}

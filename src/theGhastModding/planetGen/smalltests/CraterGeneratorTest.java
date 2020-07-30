@@ -36,7 +36,7 @@ public class CraterGeneratorTest {
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 1.5, 0.17, 0.6, 0.0);
 			CraterDistributionSettings cds = new CraterDistributionSettings(craterCnt, minsize, maxsize, minStrength, maxStrength, flattenedStart, flattenedEnd, nc, 0.8);
 			startTime = System.currentTimeMillis();
-			CraterGenerator.distributeCraters(testImg, bowlCraterConfig, flattenedCraterConfig, cds, rng);
+			CraterGenerator.distributeCraters(null, testImg, bowlCraterConfig, flattenedCraterConfig, cds, rng);
 			System.out.println("Took " + ((System.currentTimeMillis() - startTime) / 1000) + "s to generate " + craterCnt + " craters.");
 			
 			for(int i = 0; i < testImg.length; i++) {
