@@ -6,6 +6,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
+import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 
@@ -21,15 +22,14 @@ public class NewGasGiantBase {
 			int b2 = 227;
 			
 			OctaveNoise3D noise = new OctaveNoise3D(new RanMT(), 20, 20, 20, 12, 2.0, 0.6);
+			NoiseConfig nc = new NoiseConfig(noise, false, 1.5, 1.0, 0.5, 0.125);
 			BufferedImage img = new BufferedImage(1920, 1920/2, BufferedImage.TYPE_INT_RGB);
 			int bands = 4;
 			for(int i = 0; i < img.getHeight(); i++) {
 				double x = (i * (double)bands) / img.getHeight();
 				double y = 0.5 * (Math.sin(x * 2 * Math.PI) + 1.0);
 				for(int j = 0; j < img.getWidth(); j++) {
-					double val = NoiseUtils.sampleSpherableNoise(noise, j, i, img.getWidth(), img.getHeight(), 1.0, 1.0, 0.5);
-					val += 0.125;
-					val *= 1.5;
+					double val = NoiseUtils.sampleSpherableNoise(j, i, img.getWidth(), img.getHeight(),nc);
 					val += 0.5;
 					val = Math.max(0, Math.min(1, val));
 					double y2 = y * val;

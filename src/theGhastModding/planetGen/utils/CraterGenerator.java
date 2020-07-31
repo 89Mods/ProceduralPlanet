@@ -158,11 +158,21 @@ public class CraterGenerator {
 		lat %= 180.0;
 		lon %= 360.0;
 		
+		NoiseConfig nc = new NoiseConfig(noise3d).setIsRidged(false).setNoiseStrength(perturbStrength).setNoiseScale(cc.perturbScale).setDistortStrength(0.125).setNoiseOffset(0);
 		double[] noise =  new double[map.length * 2 + 1];
 		double[] eNoise = new double[map.length * 2 + 1];
-		for(int i = 0; i < map.length * 2 + 1; i++) {
-			noise[i] =  NoiseUtils.sampleSpherableNoise(noise3d, (double)i / (double)(map.length * 2 + 1) * 24, 12 + 1, 24, 24, cc.perturbScale, cc.perturbScale, 0.125) * perturbStrength;
-			eNoise[i] = NoiseUtils.sampleSpherableNoise(noise3d, (double)i / (double)(map.length * 2 + 1) * 24, 12 - 1, 24, 24, cc.ejectaPerturbScale, cc.ejectaPerturbScale, 0.125) * ejectaPerturbStrength;
+		if(perturbStrength <= 0 || cc.perturbScale <= 0) Arrays.fill(noise, 0);
+		else {
+			for(int i = 0; i < map.length * 2 + 1; i++) {
+				noise[i] =  NoiseUtils.sampleSpherableNoise((double)i / (double)(map.length * 2 + 1) * 24, 12 + 1, 24, 24, nc);
+			}
+		}
+		if(ejectaPerturbStrength <= 0 || cc.ejectaPerturbScale <= 0) Arrays.fill(eNoise, 0);
+		else {
+			nc.setNoiseStrength(ejectaPerturbStrength).setNoiseScale(cc.ejectaPerturbScale);
+			for(int i = 0; i < map.length * 2 + 1; i++) {
+				eNoise[i] = NoiseUtils.sampleSpherableNoise((double)i / (double)(map.length * 2 + 1) * 24, 12 - 1, 24, 24, nc);
+			}
 		}
 		
 		double sinLat = Math.sin(Math.toRadians(lat));
@@ -257,9 +267,7 @@ public class CraterGenerator {
 				peak = ejectaStrength > 0 && peakX <= Math.PI && peakX >= -Math.PI ? (Math.cos(peakX) + 1.0) * ejectaStrength : 0;
 			}
 			if(peak >= 1e-8) {
-				double n = NoiseUtils.sampleSpherableNoise(peakNoise.noise, lon + 180.0, lat + 90.0, 360.0, 180.0, peakNoise.noiseScale, peakNoise.noiseScale, peakNoise.distortStrength);
-				if(peakNoise.ridged) n = Math.abs(n);
-				n = n * peakNoise.noiseStrength + peakNoise.noiseOffset;
+				double n = NoiseUtils.sampleSpherableNoise(lon + 180.0, lat + 90.0, 360.0, 180.0, peakNoise);
 				peak *= n;
 			}
 		}
@@ -493,8 +501,9 @@ public class CraterGenerator {
 			int prevy = Integer.MAX_VALUE;
 			g = (Graphics2D)testRes.getGraphics();
 			g.setColor(Color.WHITE);
+			nc = new NoiseConfig(noise2d, false, 1.0, 1.0 / 12.0, 0.25, 0.5);
 			for(int i = 0; i < testRes.getWidth(); i++) {
-				double h = NoiseUtils.sampleSpherableNoise(noise2d, i, 450, 900, 900, 1.0 / 12.0, 1.0 / 12.0, 0.25) + 0.5;
+				double h = NoiseUtils.sampleSpherableNoise(i, 450, 900, 900, nc);
 				if(h < 0) continue;
 				int y = testRes.getHeight() - (int)(h * testRes.getHeight()) - 1;
 				if(prevy != Integer.MAX_VALUE) g.drawLine(i - 1, prevy, i, y);

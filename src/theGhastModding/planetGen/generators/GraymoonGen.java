@@ -35,7 +35,7 @@ public class GraymoonGen {
 			}
 			
 			final int width = 4096;
-			final int height = 2048;
+			final int height = width / 2;
 			final int planetRadius = 200000;
 			final double resMul = 200000.0 / (double)planetRadius * 0.85;
 			final double mariaLatitudeRange = 80;
@@ -70,14 +70,14 @@ public class GraymoonGen {
 			CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, craterRingThreshold, 0.9);
 			CraterConfig mariaCraterConfig =     new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
 			
-			OctaveNoise3D mariaNoise =              new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D mountainNoise =           new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D groundNoiseLargeDetail =  new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D groundNoiseMediumDetail = new OctaveNoise3D(rng, 24, 24, 24, 8, 2.0, 0.6);
-			OctaveNoise3D mountainsNoise =          new OctaveNoise3D(rng, 24, 24, 24, 9, 2.0, 0.6);
-			NoiseConfig craterMountainsNoise =      new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5), true, 1.5, 0.17, 0.6, 0.0);
-			OctaveNoise3D secondaryNoise =          new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5);
-			OctaveWorley colorNoise =               new OctaveWorley(rng, 32, 32, 32, 5, 2.0, 0.5);
+			NoiseConfig mariaNoise =                new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(3.0).setNoiseScale(2.0 * resMul).setDistortStrength(0.25).setNoiseOffset(0.1);
+			NoiseConfig mountainNoise =             new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1.0).setNoiseScale(0.54 * resMul).setDistortStrength(0.25).setNoiseOffset(0.375);
+			NoiseConfig groundNoiseLargeDetail =    new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.5).setNoiseScale(0.65 * resMul).setDistortStrength(0.5).setNoiseOffset(0.25);
+			NoiseConfig groundNoiseMediumDetail =   new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 8, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.5).setNoiseScale(0.45 * resMul).setDistortStrength(0.75).setNoiseOffset(0.25);
+			NoiseConfig mountainsNoise =            new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 9, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.25).setNoiseScale(0.72 * resMul).setDistortStrength(0.43).setNoiseOffset(0);
+			NoiseConfig craterMountainsNoise =      new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.5).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0);
+			NoiseConfig secondaryNoise =            new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(0.12).setNoiseScale(1.0 * resMul).setDistortStrength(0.3).setNoiseOffset(0.25);
+			NoiseConfig colorNoise =                new NoiseConfig(new OctaveWorley(rng, 32, 32, 32, 5, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.25).setNoiseScale(1.0 * resMul).setDistortStrength(0.75).setNoiseOffset(0);
 			
 			double[][] mariaMap =      new double[width][height];
 			double[][] marias   =      new double[width][height];
@@ -113,7 +113,7 @@ public class GraymoonGen {
 						else if(mul2 <= mariaLatitudeRange - mariaFadeRange) mul2 = 1;
 					}
 					
-					mariaMap[i][j] = (NoiseUtils.sampleSpherableNoise(mariaNoise, i, j, width, height, 2.0 * resMul, 2.0 * resMul, 0.25) + 0.1) * mul * mul2 * 3.0;
+					mariaMap[i][j] = NoiseUtils.sampleSpherableNoise(i, j, width, height, mariaNoise) * mul * mul2;
 					mariaMap[i][j] *= mariaMap[i][j];
 					mariaMap[i][j] = Math.max(0, Math.min(1, mariaMap[i][j]));
 					
@@ -187,7 +187,7 @@ public class GraymoonGen {
 				for(int j = 0; j < height; j++) {
 					double mariaMul = Math.min(1, (marias[i][j] - 0.23) * 5.882352941);
 					
-					double val = (NoiseUtils.sampleSpherableNoise(mountainNoise, i, j, width, height, 0.54 * resMul, 0.54 * resMul, 0.25) + 0.375);
+					double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainNoise);
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					if(val > 0.44) {
 						double h = val - 0.44;
@@ -227,9 +227,8 @@ public class GraymoonGen {
 					double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
 					
 					if(mariaMul > 0) {
-						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.65 * resMul, 0.65 * resMul, 0.5) * 0.5;
-						val += NoiseUtils.sampleSpherableNoise(groundNoiseMediumDetail, i, j, width, height, 0.45 * resMul, 0.45 * resMul, 0.75) * 0.5;
-						val += 0.25;
+						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseLargeDetail);
+						val += NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseMediumDetail);
 						val = Math.abs(val);
 						val *= 0.4;
 						val *= mariaMul;
@@ -237,8 +236,7 @@ public class GraymoonGen {
 					}
 					if(mariaMul < inMariaMul) {
 						mariaMul = inMariaMul - mariaMul;
-						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.65 * resMul, 0.65 * resMul, 0.5);
-						val += 0.25;
+						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseLargeDetail);
 						val = Math.abs(val);
 						val *= 0.3;
 						val *= inMariaMul;
@@ -256,9 +254,7 @@ public class GraymoonGen {
 				for(int j = 0; j < height; j++) {
 					if(mountainMap[i][j] > 0) {
 						double mul = Math.min(1, mountainMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(mountainsNoise, i, j, width, height, 0.72 * resMul, 0.72 * resMul, 0.43);
-						val = Math.abs(val);
-						val *= 1.25;
+						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainsNoise);
 						
 						mountains[i][j] = val * mul;
 					}else {
@@ -310,10 +306,7 @@ public class GraymoonGen {
 			for(int i = 0; i < width; i++) {
 				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					double val = NoiseUtils.sampleSpherableNoise(secondaryNoise, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.3);
-					val += 0.25;
-					val = Math.abs(val);
-					val *= 0.12;
+					double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, secondaryNoise);
 					if(marias[i][j] < 0.4) {
 						val *= Math.max(0.075, (marias[i][j] / 0.4));
 					}
@@ -354,8 +347,8 @@ public class GraymoonGen {
 							mariaMul * (mountainMul * mountainsColor[1] + (1.0 - mountainMul) * normalColor[1]) + (1.0 - mariaMul) * mariasColor[1],
 							mariaMul * (mountainMul * mountainsColor[2] + (1.0 - mountainMul) * normalColor[2]) + (1.0 - mariaMul) * mariasColor[2],
 					};
-					double mul = NoiseUtils.sampleSpherableNoise(colorNoise, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.75);
-					mul = Math.abs(mul) * 1.25 + 0.5;
+					double mul = NoiseUtils.sampleSpherableNoise(i, j, width, height, colorNoise);
+					mul += 0.5;
 					if(mul > mul) mul = 1;
 					rgb[0] = mul * rgb[0];
 					rgb[1] = mul * rgb[1];

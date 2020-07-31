@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import edu.cornell.lassp.houle.RngPack.RanMT;
-import theGhastModding.planetGen.noise.NoiseFunction;
+import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.WorleyNoise;
@@ -100,20 +100,20 @@ public class ComplexSurface {
 				System.out.println();
 				fos.close();
 			}
-			OctaveNoise3D continentNoise =          new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D mountainNoise =           new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D lakeNoiseMul =            new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			NoiseFunction lakeNoise =               new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D desertNoise =             new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D taigaNoise =              new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6);
-			OctaveNoise3D groundNoiseLargeDetail =  new OctaveNoise3D(rng, 16, 16, 16, 6, 2.0, 0.5);
-			OctaveNoise3D groundNoiseMediumDetail = new OctaveNoise3D(rng, 20, 20, 20, 6, 2.0, 0.5);
-			OctaveNoise3D groundNoiseSmallDetail =  new OctaveNoise3D(rng, 30, 30, 30, 6, 2.0, 0.5);
-			OctaveNoise3D hillNoise =               new OctaveNoise3D(rng, 20, 20, 20, 9, 2.0, 0.5);
-			OctaveNoise3D mountainsNoise =          new OctaveNoise3D(rng, 24, 24, 24, 11, 2.0, 0.5); //TODO: Set to 16 octaves before use
-			OctaveNoise3D colorNoise =              new OctaveNoise3D(rng, 20, 20, 20, 6, 2.0, 0.6);
-			OctaveNoise3D polesPerturbNoise =       new OctaveNoise3D(rng, 16, 16, 16, 3, 2.0, 0.6);
-			WorleyNoise  mountainWorley =          new WorleyNoise(rng, 64, 64, 64);
+			NoiseConfig continentNoise =            new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(12).setNoiseScale(0.85 * resMul).setDistortStrength(0.25).setNoiseOffset(oceanFactor / 2.0);
+			NoiseConfig mountainNoise =             new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.18 * resMul).setDistortStrength(0.25).setNoiseOffset(0.375);
+			NoiseConfig lakeNoiseMul =              new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0 * resMul).setDistortStrength(0.25).setNoiseOffset(0.375);
+			NoiseConfig lakeNoise =                 new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.3 * resMul).setDistortStrength(0.25).setNoiseOffset(0.375);
+			NoiseConfig desertNoise =               new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0 * resMul).setDistortStrength(0.25).setNoiseOffset(0.375);
+			NoiseConfig taigaNoise =                new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0 * resMul).setDistortStrength(0.25).setNoiseOffset(0.375);
+			NoiseConfig groundNoiseLargeDetail =    new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 6, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.25 * resMul).setDistortStrength(0.2).setNoiseOffset(0.25);
+			NoiseConfig groundNoiseMediumDetail =   new NoiseConfig(new OctaveNoise3D(rng, 20, 20, 20, 6, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.16 * resMul).setDistortStrength(0.2).setNoiseOffset(0.25);
+			NoiseConfig groundNoiseSmallDetail =    new NoiseConfig(new OctaveNoise3D(rng, 30, 30, 30, 6, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.06 * resMul).setDistortStrength(0.2).setNoiseOffset(0.25);
+			NoiseConfig hillNoise =                 new NoiseConfig(new OctaveNoise3D(rng, 20, 20, 20, 9, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(0.35).setNoiseScale(0.16 * resMul).setDistortStrength(0.5).setNoiseOffset(0.25);
+			NoiseConfig mountainsNoise =            new NoiseConfig(new OctaveNoise3D(rng, 24, 24, 24, 11, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(3.8).setNoiseScale(mountainNoiseScale * resMul).setDistortStrength(0.6).setNoiseOffset(0); //TODO: Set to 16 octaves before use
+			NoiseConfig colorNoise =                new NoiseConfig(new OctaveNoise3D(rng, 20, 20, 20, 6, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1).setNoiseScale(0.25 * resMul).setDistortStrength(0.5).setNoiseOffset(0);
+			NoiseConfig polesPerturbNoise =         new NoiseConfig(new OctaveNoise3D(rng, 16, 16, 16, 3, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.5).setDistortStrength(0.35).setNoiseOffset(0);
+			NoiseConfig mountainWorley =            new NoiseConfig(new WorleyNoise(rng, 64, 64, 64)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(mountainWorleyScale * resMul).setDistortStrength(0.01).setNoiseOffset(0);
 			
 			double[] biomeColorOceans =          RGB(new Color(55, 98, 171));
 			double[] biomeColorLowlands =        RGB(new Color(131, 188, 46));
@@ -171,7 +171,7 @@ public class ComplexSurface {
 			for(int i = 0; i < width; i++) {
 				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					continentMap[i][j] = (NoiseUtils.sampleSpherableNoise(continentNoise, i, j, width, height, 0.85 * resMul, 0.85 * resMul, 0.25) + oceanFactor / 2.0) * 12.0;
+					continentMap[i][j] = NoiseUtils.sampleSpherableNoise(i, j, width, height, continentNoise);
 					distanceMap[i][j] = continentMap[i][j] / 12.0;
 					continentMap[i][j] = /*1.0 - */Math.max(0, Math.min(1, continentMap[i][j]));
 				}
@@ -188,7 +188,7 @@ public class ComplexSurface {
 					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 					double distance = SphereUtils.distance(latitude, longitude, -90, 0);
 					distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0));
-					double val = (NoiseUtils.sampleSpherableNoise(mountainNoise, i, j, width, height, 0.18 * resMul, 0.18 * resMul, 0.25) + 0.375);
+					double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainNoise);
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					if(distanceMap[i][j] < hillsFadeEnd && val > 0.34) {
 						double h = val - 0.34;
@@ -212,12 +212,12 @@ public class ComplexSurface {
 							mountainMap[i][j] *= amul;
 						}
 					}
-					val = (NoiseUtils.sampleSpherableNoise(lakeNoiseMul, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.25) + 0.375);
+					val = NoiseUtils.sampleSpherableNoise(i, j, width, height, lakeNoiseMul);
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					if(val > 0.43) {
 						val = Math.min((val - 0.43) * 2.325 * 5.0, 1.0);
 						if(val > 0) {
-							val = (NoiseUtils.sampleSpherableNoise(lakeNoise, i, j, width, height, 0.3 * resMul, 0.3 * resMul, 0.25) + 0.375) * val;
+							val = NoiseUtils.sampleSpherableNoise(i, j, width, height, lakeNoise) * val;
 							val = Math.max(0, Math.min(1, Math.abs(val)));
 							double mul = 1.0;
 							if(planetTemperature > 0.125) {
@@ -237,7 +237,7 @@ public class ComplexSurface {
 							}
 						}
 					}
-					val = (NoiseUtils.sampleSpherableNoise(desertNoise, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.25) + 0.375);
+					val = NoiseUtils.sampleSpherableNoise(i, j, width, height, desertNoise);
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					double mul = 0.0;
 					if(Math.abs(latitude) <= desertFadeStart) {
@@ -266,7 +266,7 @@ public class ComplexSurface {
 						if(distance <= (poleRadius * 1.0)) mul = 1;
 						if(mul > 1) mul = 1;
 						
-						val = (NoiseUtils.sampleSpherableNoise(taigaNoise, i, j, width, height, 1.0 * resMul, 1.0 * resMul, 0.25) + 0.375);
+						val = NoiseUtils.sampleSpherableNoise(i, j, width, height, taigaNoise);
 						val = Math.max(0, Math.min(1, Math.abs(val)));
 						val += taigaOffset;
 						if(val > 0.35) {
@@ -352,10 +352,9 @@ public class ComplexSurface {
 				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] > 0) {
-						double val = NoiseUtils.sampleSpherableNoise(groundNoiseLargeDetail, i, j, width, height, 0.25 * resMul, 0.25 * resMul, 0.2) * 0.333;
-						val += NoiseUtils.sampleSpherableNoise(groundNoiseMediumDetail, i, j, width, height, 0.16 * resMul, 0.16 * resMul, 0.2) * 0.333;
-						val += NoiseUtils.sampleSpherableNoise(groundNoiseSmallDetail, i, j, width, height, 0.06 * resMul, 0.06 * resMul, 0.2) * 0.333;
-						val += 0.25;
+						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseLargeDetail);
+						val += NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseMediumDetail);
+						val += NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseSmallDetail);
 						val = Math.abs(val);
 						val *= 0.25;
 						ground[i][j] = val;
@@ -374,10 +373,8 @@ public class ComplexSurface {
 				for(int j = 0; j < height; j++) {
 					if(hillMap[i][j] > 0) {
 						double mul = Math.min(1, hillMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(hillNoise, i, j, width, height, 0.16 * resMul, 0.16 * resMul, 0.5);
-						val += 0.25;
-						val = Math.abs(val);
-						val *= mul * 0.35;
+						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, hillNoise);
+						val *= mul;
 						
 						hills[i][j] = val;
 					}else {
@@ -395,10 +392,9 @@ public class ComplexSurface {
 				for(int j = 0; j < height; j++) {
 					if(mountainMap[i][j] > 0) {
 						double mul = Math.min(1, mountainMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(mountainsNoise, i, j, width, height, mountainNoiseScale * resMul, mountainNoiseScale * resMul, 0.6);
-						val = Math.abs(val) * 3.8;
+						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainsNoise);
 						
-						double mul2 =  Math.max(0, Math.min(1, (1.0 - NoiseUtils.sampleSpherableNoise(mountainWorley, i, j, width, height, mountainWorleyScale * resMul, mountainWorleyScale * resMul, 0.01)) * 2.0 + 0.1));
+						double mul2 =  Math.max(0, Math.min(1, (1.0 - NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainWorley)) * 2.0 + 0.1));
 						
 						mountains[i][j] = val * mul * mul2;
 					}else {
@@ -434,14 +430,14 @@ public class ComplexSurface {
 				for(int j = 0; j < height; j++) {
 					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 					double distance = SphereUtils.distance(latitude, longitude, -90, 0);
-					distance += NoiseUtils.sampleSpherableNoise(polesPerturbNoise, i, 175, width, 360, 0.5, 0.5, 0.35) * Math.min(poleRadius, 0.275) / 1.333;
+					distance += NoiseUtils.sampleSpherableNoise(i, 175, width, 360, polesPerturbNoise) * Math.min(poleRadius, 0.275) / 1.333;
 					if(distance <= poleRadius) {
 						poles[i][j] = 0.01;
 					}else {
 						poles[i][j] = 0.0;
 					}
 					distance = SphereUtils.distance(latitude, longitude, 90, 0);
-					distance += NoiseUtils.sampleSpherableNoise(polesPerturbNoise, i, 185, width, 360, 0.5, 0.5, 0.35) * Math.min(poleRadius, 0.275) / 1.333;
+					distance += NoiseUtils.sampleSpherableNoise(i, 185, width, 360, polesPerturbNoise) * Math.min(poleRadius, 0.275) / 1.333;
 					if(distance <= poleRadius) {
 						poles[i][j] = 0.01001;
 					}
@@ -541,8 +537,8 @@ public class ComplexSurface {
 						}
 					}
 					
-					double mul = NoiseUtils.sampleSpherableNoise(colorNoise, i, j, width, height, 0.25 * resMul, 0.25 * resMul, 0.5);
-					mul = Math.abs(mul) - 0.25;
+					double mul = NoiseUtils.sampleSpherableNoise(i, j, width, height, colorNoise);
+					mul -= 0.25;
 					mul *= 1.25;
 					rgb[0] -= mul * rgb[0];
 					rgb[1] -= mul * rgb[1];

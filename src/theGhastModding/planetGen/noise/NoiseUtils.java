@@ -2,7 +2,7 @@ package theGhastModding.planetGen.noise;
 
 public class NoiseUtils {
 	
-	public static double sampleSpherableNoise(NoiseFunction noise, double x, double y, double width, double height, double scalex, double scaley, double distortStrength) {
+	public static double sampleSpherableNoise(double x, double y, double width, double height, NoiseConfig nc) {
 		double fNX = (x + 0.5) / width;
 		double fNY = (y + 0.5) / height;
 		double fRdx = fNX * 2 * Math.PI;
@@ -11,9 +11,12 @@ public class NoiseUtils {
 		double a = Math.sin(fRdx) * fYSin;
 		double b = Math.cos(fRdx) * fYSin;
 		double c = Math.cos(fRdy);
-		double offsetx = scalex < 1 ? 1.55 / scalex : 1.55;
-		double offsety = scaley < 1 ? 1.55 / scaley : 1.55;
-		return distortedNoise(noise, offsetx + a / scalex, offsetx + b / scalex, offsety + c / scaley, distortStrength);
+		double offsetx = nc.noiseScale < 1 ? 1.55 / nc.noiseScale : 1.55;
+		double offsety = nc.noiseScale < 1 ? 1.55 / nc.noiseScale : 1.55;
+		double val = distortedNoise(nc.noise, offsetx + a / nc.noiseScale, offsetx + b / nc.noiseScale, offsety + c / nc.noiseScale, nc.distortStrength);
+		val = val + nc.noiseOffset;
+		if(nc.ridged) val = Math.abs(val);
+		return val * nc.noiseStrength;
 		//return noise.sampleNorm(1.0 + a / scalex, 2.0 + b / scalex, 3.0 + c / scaley, 1.5, 1.0);
 	}// https://gamedev.stackexchange.com/questions/162454/how-to-distort-2d-perlin-noise
 	

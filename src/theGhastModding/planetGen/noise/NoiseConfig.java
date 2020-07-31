@@ -13,6 +13,10 @@ public class NoiseConfig {
 		this(null, false, 1.0, 1.0, 0.0, 0.0);
 	}
 	
+	public NoiseConfig(NoiseFunction noise) {
+		this(noise, false, 1.0, 1.0, 0.0, 0.0);
+	}
+	
 	public NoiseConfig(NoiseFunction noise, boolean ridged, double noiseStrength, double noiseScale, double distortStrength, double noiseOffset) {
 		super();
 		this.noise = noise;

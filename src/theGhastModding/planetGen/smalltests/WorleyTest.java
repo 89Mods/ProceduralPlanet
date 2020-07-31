@@ -9,6 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
+import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveWorley;
 
@@ -20,11 +21,12 @@ public class WorleyTest {
 		RanMT rng = new RanMT(3528608460342643357L);
 		//WorleyNoise worley = new WorleyNoise(rng, 32, 32, 32);
 		OctaveWorley worley = new OctaveWorley(rng, 32, 32, 32, 5, 2.0, 0.5);
+		NoiseConfig nc = new NoiseConfig(worley).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1).setDistortStrength(0.5).setNoiseOffset(0);
 		System.out.println(-33 % 32);
 		for(int i = 0; i < 2048; i++) {
 			for(int j = 0; j < 1024; j++) {
 				//noisemap[i][j] = worley.sample(i / 50.0, j / 50.0, 3.0);
-				noisemap[i][j] = (NoiseUtils.sampleSpherableNoise(worley, i, j, 2048, 1024, 1, 1, 0.5) - 0.5) * 1.25 + 0.5 * 1.25;
+				noisemap[i][j] = (NoiseUtils.sampleSpherableNoise(i, j, 2048, 1024, nc) - 0.5) * 1.25 + 0.5 * 1.25;
 			}
 		}
 		for(int i = 0; i < 2048; i++) {
