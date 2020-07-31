@@ -7,7 +7,7 @@ import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.NoiseUtils;
+import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.OctaveWorley;
 import theGhastModding.planetGen.utils.CraterGenerator;
@@ -88,11 +88,13 @@ public class GraymoonGen {
 			double[][] finalNoiseMap = new double[width][height];
 			double[][][] colorMap =    new double[width][height][3];
 			double[][][] biomeMap =    new double[width][height][3];
-
+			
+			double[][] tempMap =        new double[width][height];
+			double[][] mariaNoiseMuls = new double[width][height];
+			
 			System.out.println("Marias");
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(mariaMap, mariaNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i / 2, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				double mul = 1;
 				if(mariaLongitudeRange < 180) {
@@ -113,7 +115,7 @@ public class GraymoonGen {
 						else if(mul2 <= mariaLatitudeRange - mariaFadeRange) mul2 = 1;
 					}
 					
-					mariaMap[i][j] = NoiseUtils.sampleSpherableNoise(i, j, width, height, mariaNoise) * mul * mul2;
+					mariaMap[i][j] = mariaMap[i][j] * mul * mul2;
 					mariaMap[i][j] *= mariaMap[i][j];
 					mariaMap[i][j] = Math.max(0, Math.min(1, mariaMap[i][j]));
 					
@@ -138,13 +140,14 @@ public class GraymoonGen {
 				}
 			}
 			
+			ProgressBars.printBar();
 			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) mariaCraters[i][j] = 0.4;
 			CraterConfig mariaShapeCraterConfig = new CraterConfig();
 			mariaShapeCraterConfig.setPerturbStrength(0.2).setPerturbScale(0.4).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
 			mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
 			mariaShapeCraterConfig.setFullPeakSize(10).setRingThreshold(128).setRingFunctMul(1);
 			for(int i = 0; i < mariaCraterCount; i++) {
-				ProgressBars.printProgress(i + mariaCraterCount, mariaCraterCount * 2);
+				ProgressBars.printProgress(i, mariaCraterCount);
 				double lat = (rng.nextDouble() * 2 - 1) * (mariaLatitudeRange - mariaFadeRange / 2);
 				double lon = (rng.nextDouble() * 2 - 1) * (mariaLongitudeRange - mariaFadeRange / 2);
 				int px = (int)((lon + 180.0) / 360.0 * width);
@@ -162,7 +165,15 @@ public class GraymoonGen {
 				for(int j = 0; j < height; j++) {
 					mariaCraters[i][j] = Math.max(0.23, mariaCraters[i][j]);
 					marias[i][j] = Math.min(marias[i][j], mariaCraters[i][j]);
-					
+				}
+			}
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					mariaNoiseMuls[i][j] = Math.max(0, Math.min(1, (marias[i][j] - 0.23) * 5.882352941));
+				}
+			}
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
 					//Post-scale depth because I'm too lazy to re-do all of the above code
 					if(marias[i][j] > 0.25) {
 						marias[i][j] = (marias[i][j] - 0.25) * 6.6666666;
@@ -181,23 +192,24 @@ public class GraymoonGen {
 			MapUtils.displayMap("marias.png", marias);
 			
 			System.out.println("Biomes");
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(mountainMap, mountainNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					double mariaMul = Math.min(1, (marias[i][j] - 0.23) * 5.882352941);
-					
-					double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainNoise);
+					double val = mountainMap[i][j];
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					if(val > 0.44) {
 						double h = val - 0.44;
 						h = h * 1.785 * 5.0;
 						mountainMap[i][j] = h;
-						mountainMap[i][j] *= mariaMul;
-					}
+						mountainMap[i][j] *= mariaNoiseMuls[i][j];
+					}else mountainMap[i][j] = 0;
 				}
 			}
-			ProgressBars.finishProgress();
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					mountainMap[i][j] = Math.min(1, mountainMap[i][j]);
+				}
+			}
 			
 			BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 			for(int i = 0; i < width; i++) {
@@ -219,16 +231,17 @@ public class GraymoonGen {
 			ImageIO.write(img, "png", new File("continents.png"));
 			
 			System.out.println("Ground");
-			ProgressBars.printBar();
-			double inMariaMul = 0.1;
+			
+			NoisemapGenerator.genNoisemap(ground, groundNoiseLargeDetail, null, true);
+			NoisemapGenerator.genNoisemap(tempMap, groundNoiseMediumDetail, mariaNoiseMuls, true);
+			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+			double inMariaMul = 0.15;
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
+					double mariaMul = mariaNoiseMuls[i][j];
 					
 					if(mariaMul > 0) {
-						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseLargeDetail);
-						val += NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseMediumDetail);
+						double val = ground[i][j];
 						val = Math.abs(val);
 						val *= 0.4;
 						val *= mariaMul;
@@ -236,7 +249,7 @@ public class GraymoonGen {
 					}
 					if(mariaMul < inMariaMul) {
 						mariaMul = inMariaMul - mariaMul;
-						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseLargeDetail);
+						double val = ground[i][j];
 						val = Math.abs(val);
 						val *= 0.3;
 						val *= inMariaMul;
@@ -245,25 +258,10 @@ public class GraymoonGen {
 				}
 			}
 			MapUtils.displayMap("ground.png", ground);
-			ProgressBars.finishProgress();
 			
 			System.out.println("Mountains");
-			ProgressBars.printBar();
-			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
-				for(int j = 0; j < height; j++) {
-					if(mountainMap[i][j] > 0) {
-						double mul = Math.min(1, mountainMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainsNoise);
-						
-						mountains[i][j] = val * mul;
-					}else {
-						mountains[i][j] = 0;
-					}
-				}
-			}
+			NoisemapGenerator.genNoisemap(mountains, mountainsNoise, mountainMap, true);
 			MapUtils.displayMap("mountains.png", mountains);
-			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -302,18 +300,16 @@ public class GraymoonGen {
 			ProgressBars.finishProgress();
 			
 			System.out.println("Secondary Noise");
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(tempMap, secondaryNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, secondaryNoise);
+					double val = tempMap[i][j];
 					if(marias[i][j] < 0.4) {
 						val *= Math.max(0.075, (marias[i][j] / 0.4));
 					}
 					finalNoiseMap[i][j] += val;
 				}
 			}
-			ProgressBars.finishProgress();
 			
 			int biggestPixelValue = 0;
 			for(int i = 0; i < width; i++) {
@@ -335,9 +331,8 @@ public class GraymoonGen {
 			
 			System.out.println("Color Map!");
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(tempMap, colorNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
 					if(mariaMul < 0) mariaMul = 0;
@@ -347,7 +342,7 @@ public class GraymoonGen {
 							mariaMul * (mountainMul * mountainsColor[1] + (1.0 - mountainMul) * normalColor[1]) + (1.0 - mariaMul) * mariasColor[1],
 							mariaMul * (mountainMul * mountainsColor[2] + (1.0 - mountainMul) * normalColor[2]) + (1.0 - mariaMul) * mariasColor[2],
 					};
-					double mul = NoiseUtils.sampleSpherableNoise(i, j, width, height, colorNoise);
+					double mul = tempMap[i][j];
 					mul += 0.5;
 					if(mul > mul) mul = 1;
 					rgb[0] = mul * rgb[0];
@@ -362,7 +357,6 @@ public class GraymoonGen {
 					colorMap[i][j] = rgb;
 				}
 			}
-			ProgressBars.finishProgress();
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));

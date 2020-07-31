@@ -9,7 +9,8 @@ import java.util.Arrays;
 import javax.imageio.ImageIO;
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.NoiseUtils;
+import theGhastModding.planetGen.utils.NoiseUtils;
+import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.WorleyNoise;
 import theGhastModding.planetGen.utils.MapUtils;
@@ -166,29 +167,28 @@ public class ComplexSurface {
 			double[][][] colorMap =    new double[width][height][3];
 			double[][][] biomeMap =    new double[width][height][3];
 			
+			double[][] tempMap = new double[width][height];
+			double[][] tempMap2 = new double[width][height];
+			
 			System.out.println("Continents & Biomes");
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(continentMap, continentNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
-					continentMap[i][j] = NoiseUtils.sampleSpherableNoise(i, j, width, height, continentNoise);
 					distanceMap[i][j] = continentMap[i][j] / 12.0;
 					continentMap[i][j] = /*1.0 - */Math.max(0, Math.min(1, continentMap[i][j]));
 				}
 			}
-			ProgressBars.finishProgress();
 			MapUtils.displayMap("distances.png", distanceMap);
 			
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(tempMap, mountainNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] < 0) continue;
 					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 					double distance = SphereUtils.distance(latitude, longitude, -90, 0);
 					distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0));
-					double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainNoise);
+					double val = tempMap[i][j];
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					if(distanceMap[i][j] < hillsFadeEnd && val > 0.34) {
 						double h = val - 0.34;
@@ -212,12 +212,19 @@ public class ComplexSurface {
 							mountainMap[i][j] *= amul;
 						}
 					}
-					val = NoiseUtils.sampleSpherableNoise(i, j, width, height, lakeNoiseMul);
+				}
+			}
+			NoisemapGenerator.genNoisemap(tempMap, lakeNoiseMul, null, true);
+			NoisemapGenerator.genNoisemap(tempMap2, lakeNoise, null, true);
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					if(continentMap[i][j] < 0) continue;
+					double val = tempMap[i][j];
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					if(val > 0.43) {
 						val = Math.min((val - 0.43) * 2.325 * 5.0, 1.0);
 						if(val > 0) {
-							val = NoiseUtils.sampleSpherableNoise(i, j, width, height, lakeNoise) * val;
+							val = tempMap2[i][j] * val;
 							val = Math.max(0, Math.min(1, Math.abs(val)));
 							double mul = 1.0;
 							if(planetTemperature > 0.125) {
@@ -237,7 +244,17 @@ public class ComplexSurface {
 							}
 						}
 					}
-					val = NoiseUtils.sampleSpherableNoise(i, j, width, height, desertNoise);
+				}
+			}
+			NoisemapGenerator.genNoisemap(tempMap, desertNoise, null, true);
+			NoisemapGenerator.genNoisemap(tempMap2, taigaNoise, null, true);
+			for(int i = 0; i < width; i++) {
+				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
+				for(int j = 0; j < height; j++) {
+					if(continentMap[i][j] < 0) continue;
+					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
+					double distance = SphereUtils.distance(latitude, longitude, -90, 0);
+					double val = tempMap[i][j];
 					val = Math.max(0, Math.min(1, Math.abs(val)));
 					double mul = 0.0;
 					if(Math.abs(latitude) <= desertFadeStart) {
@@ -266,7 +283,7 @@ public class ComplexSurface {
 						if(distance <= (poleRadius * 1.0)) mul = 1;
 						if(mul > 1) mul = 1;
 						
-						val = NoiseUtils.sampleSpherableNoise(i, j, width, height, taigaNoise);
+						val = tempMap2[i][j];
 						val = Math.max(0, Math.min(1, Math.abs(val)));
 						val += taigaOffset;
 						if(val > 0.35) {
@@ -298,7 +315,15 @@ public class ComplexSurface {
 					}*/
 				}
 			}
-			ProgressBars.finishProgress();
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					hillMap[i][j] = Math.min(1, hillMap[i][j]);
+					mountainMap[i][j] = Math.min(1, mountainMap[i][j]);
+					desertMap[i][j] = Math.min(1, desertMap[i][j]);
+					taigaMap[i][j] = Math.min(1, taigaMap[i][j]);
+					snowMap[i][j] = Math.min(1, snowMap[i][j]);
+				}
+			}
 			
 			BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 			for(int i = 0; i < width; i++) {
@@ -347,64 +372,36 @@ public class ComplexSurface {
 			//System.exit(0);
 			
 			System.out.println("Ground");
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(ground, groundNoiseLargeDetail, continentMap, true);
+			NoisemapGenerator.genNoisemap(tempMap, groundNoiseMediumDetail, continentMap, true);
+			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+			NoisemapGenerator.genNoisemap(tempMap, groundNoiseSmallDetail, continentMap, true);
+			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+			
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(continentMap[i][j] > 0) {
-						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseLargeDetail);
-						val += NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseMediumDetail);
-						val += NoiseUtils.sampleSpherableNoise(i, j, width, height, groundNoiseSmallDetail);
-						val = Math.abs(val);
-						val *= 0.25;
-						ground[i][j] = val;
-					} else {
-						ground[i][j] = 0;
+						ground[i][j] = Math.abs(ground[i][j]) * 0.25;
 					}
 				}
 			}
 			MapUtils.displayMap("ground.png", ground);
-			ProgressBars.finishProgress();
 			
 			System.out.println("Hills");
-			ProgressBars.printBar();
-			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
-				for(int j = 0; j < height; j++) {
-					if(hillMap[i][j] > 0) {
-						double mul = Math.min(1, hillMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, hillNoise);
-						val *= mul;
-						
-						hills[i][j] = val;
-					}else {
-						hills[i][j] = 0;
-					}
-				}
-			}
+			NoisemapGenerator.genNoisemap(hills, hillNoise, hillMap, true);
 			MapUtils.displayMap("hills.png", hills);
-			ProgressBars.finishProgress();
 			
 			System.out.println("Mountains");
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(mountains, mountainsNoise, mountainMap, true);
+			NoisemapGenerator.genNoisemap(tempMap, mountainWorley, mountainMap, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				for(int j = 0; j < height; j++) {
 					if(mountainMap[i][j] > 0) {
-						double mul = Math.min(1, mountainMap[i][j]);
-						double val = NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainsNoise);
-						
-						double mul2 =  Math.max(0, Math.min(1, (1.0 - NoiseUtils.sampleSpherableNoise(i, j, width, height, mountainWorley)) * 2.0 + 0.1));
-						
-						mountains[i][j] = val * mul * mul2;
-					}else {
-						mountains[i][j] = 0;
+						mountains[i][j] *= Math.max(0, Math.min(1, (1.0 - tempMap[i][j]) * 2.0 + 0.1));
 					}
 				}
 			}
-			
 			MapUtils.displayMap("mountains.png", mountains);
-			ProgressBars.finishProgress();
 			
 			System.out.println("Lakes");
 			ProgressBars.printBar();
@@ -449,7 +446,7 @@ public class ComplexSurface {
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					double mul = Math.min(1, mountainMap[i][j]);
-					finalNoiseMap[i][j] = (ground[i][j] + (1.0 - mul) * hills[i][j] + mountains[i][j]) * lakes[i][j] * continentMap[i][j];
+					finalNoiseMap[i][j] = (ground[i][j] + (1.0 - mul) * hills[i][j] + mountains[i][j]) * (lakes[i][j] * continentMap[i][j]);
 					finalNoiseMap[i][j] = Math.max(finalNoiseMap[i][j], poles[i][j]);
 				}
 			}
@@ -475,9 +472,8 @@ public class ComplexSurface {
 			
 			System.out.println("Color Map!");
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			ProgressBars.printBar();
+			NoisemapGenerator.genNoisemap(tempMap, colorNoise, null, true);
 			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					double continent   = Math.min(1, continentMap[i][j]);
@@ -537,7 +533,7 @@ public class ComplexSurface {
 						}
 					}
 					
-					double mul = NoiseUtils.sampleSpherableNoise(i, j, width, height, colorNoise);
+					double mul = tempMap[i][j];
 					mul -= 0.25;
 					mul *= 1.25;
 					rgb[0] -= mul * rgb[0];
@@ -550,7 +546,6 @@ public class ComplexSurface {
 					//colorMap[i][j][2] = (1.0 - continent) * oceansColor[2] + continent * rgb[2];
 				}
 			}
-			ProgressBars.finishProgress();
 			
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {

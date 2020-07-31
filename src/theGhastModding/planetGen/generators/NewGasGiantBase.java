@@ -7,7 +7,7 @@ import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.NoiseUtils;
+import theGhastModding.planetGen.utils.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 
 public class NewGasGiantBase {

@@ -11,7 +11,7 @@ import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.NoiseUtils;
+import theGhastModding.planetGen.utils.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise2D;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.PerlinNoise3D;
@@ -151,7 +151,7 @@ public class CraterGenerator {
 		double ejectaPerturbStrength = cc.ejectaPerturbStrength * cc.size;
 		double ejectaStretch = 1.0 / cc.ejectaStretch;
 		
-		double enddist = -Math.log((1.0 / 512.0) / cc.craterStrength) / (s * Math.log(cc.p2));
+		double enddist = -Math.log((1.0 / 512.0) / cc.craterStrength) / (s * Math.log(cc.p2)) * Math.max(1, (map.length / 4096.0));
 		
 		PerlinNoise3D noise3d = new PerlinNoise3D(rng, 8, 8, 8);
 		
