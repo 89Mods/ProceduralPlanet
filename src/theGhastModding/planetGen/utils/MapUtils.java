@@ -53,4 +53,17 @@ public class MapUtils {
 		ImageIO.write(img, "png", new File(file));
 	}
 	
+	public static void save16Bit(String file, double[][] map) throws Exception {
+		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_ARGB);
+		for(int i = 0; i < map.length; i++) {
+			for(int j = 0; j < map[0].length; j++) {
+				double v = map[i][j];
+				int col = (int)(v * 65535.0);
+				col = Math.max(0, Math.min(65535, col));
+				img.setRGB(i, j, (((col >> 0) & 0xFF) << 24) | (((col >> 8) & 0xFF) << 8));
+			}
+		}
+		ImageIO.write(img, "png", new File(file));
+	}
+	
 }

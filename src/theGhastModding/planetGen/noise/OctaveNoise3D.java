@@ -9,12 +9,17 @@ public class OctaveNoise3D extends NoiseFunction {
 	private double lacunarity;
 	private int octaves;
 	
-	public OctaveNoise3D(Random rng, int width, int height, int depth, int octaves, double lacunarity, double persistence) {
+	public OctaveNoise3D(int width, int height, int depth, int octaves, double lacunarity, double persistence) {
 		super(width, height, depth);
-		this.noise = new PerlinNoise3D(rng, (int)(width * octaves), (int)(height * octaves), (int)(depth * octaves));
+		this.noise = new PerlinNoise3D((int)(width * octaves), (int)(height * octaves), (int)(depth * octaves));
 		this.persistence = persistence;
 		this.lacunarity = lacunarity;
 		this.octaves = octaves;
+	}
+	
+	@Override
+	public void initialize(Random rng) {
+		this.noise.initialize(rng);
 	}
 	
 	public double sample(double x, double y, double z) {

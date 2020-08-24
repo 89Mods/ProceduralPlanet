@@ -6,9 +6,13 @@ public class PerlinNoise2D extends NoiseFunction {
 	
 	private double[][][] noiseMap;
 	
-	public PerlinNoise2D(Random rng, int width, int height) {
+	public PerlinNoise2D(int width, int height) {
 		super(width, height, 1);
 		this.noiseMap = new double[width + 1][height + 1][2];
+	}
+	
+	@Override
+	public void initialize(Random rng) {
 		for(int i = 0; i < width + 1; i++) {
 			for(int j = 0; j < height + 1; j++) {
 				double d1 = rng.nextDouble() * 2.0 - 1.0;

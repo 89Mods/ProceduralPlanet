@@ -6,9 +6,13 @@ public class WorleyNoise extends NoiseFunction {
 	
 	private double[][] points;
 	
-	public WorleyNoise(Random rng, int width, int height, int depth) {
+	public WorleyNoise(int width, int height, int depth) {
 		super(width, height, depth);
 		this.points = new double[width * height * depth][3];
+	}
+	
+	@Override
+	public void initialize(Random rng) {
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				for(int k = 0; k < depth; k++) {

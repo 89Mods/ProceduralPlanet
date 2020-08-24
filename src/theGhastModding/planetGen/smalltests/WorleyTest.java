@@ -20,11 +20,12 @@ public class WorleyTest {
 		BufferedImage res = new BufferedImage(2048, 1024, BufferedImage.TYPE_INT_RGB);
 		RanMT rng = new RanMT(3528608460342643357L);
 		//WorleyNoise worley = new WorleyNoise(rng, 32, 32, 32);
-		OctaveWorley worley = new OctaveWorley(rng, 32, 32, 32, 5, 2.0, 0.5);
+		OctaveWorley worley = new OctaveWorley(32, 32, 32, 5, 2.0, 0.5);
+		worley.initialize(rng);
 		NoiseConfig nc = new NoiseConfig(worley).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1).setDistortStrength(0.5).setNoiseOffset(0);
 		System.out.println(-33 % 32);
 		try {
-			NoisemapGenerator.genNoisemap(noisemap, nc, null, true);
+			NoisemapGenerator.genNoisemap(noisemap, nc, null, 1.0, true);
 		} catch(Exception e) {
 			System.err.println("Error generating noisemap: ");
 			e.printStackTrace();
@@ -49,6 +50,7 @@ public class WorleyTest {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+		NoisemapGenerator.cleanUp();
 	}
 	
 }

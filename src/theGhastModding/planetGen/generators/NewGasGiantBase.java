@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.utils.NoiseUtils;
+import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 
 public class NewGasGiantBase {
@@ -21,7 +22,8 @@ public class NewGasGiantBase {
 			int g2 = 168;
 			int b2 = 227;
 			
-			OctaveNoise3D noise = new OctaveNoise3D(new RanMT(), 20, 20, 20, 12, 2.0, 0.6);
+			OctaveNoise3D noise = new OctaveNoise3D(20, 20, 20, 12, 2.0, 0.6);
+			noise.initialize(new RanMT());
 			NoiseConfig nc = new NoiseConfig(noise, false, 1.5, 1.0, 0.5, 0.125);
 			BufferedImage img = new BufferedImage(1920, 1920/2, BufferedImage.TYPE_INT_RGB);
 			int bands = 4;
@@ -51,6 +53,7 @@ public class NewGasGiantBase {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		NoisemapGenerator.cleanUp();
 	}
 	
 }

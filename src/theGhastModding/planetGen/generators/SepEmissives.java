@@ -6,6 +6,8 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import theGhastModding.planetGen.utils.NoisemapGenerator;
+
 public class SepEmissives {
 	
 	public static void main(String[] args) {
@@ -82,6 +84,7 @@ public class SepEmissives {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		NoisemapGenerator.cleanUp();
 	}
 	
 	private static boolean isInsideHexagon(double x, double y) {

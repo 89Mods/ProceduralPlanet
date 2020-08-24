@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.utils.CraterGenerator;
+import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterDistributionSettings;
 
@@ -32,7 +33,8 @@ public class CraterGeneratorTest {
 			final double flattenedEnd   = 28;
 			CraterConfig bowlCraterConfig =      new CraterConfig(0, 0, 0.2, 0.4, 1.0, 4.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, 96, 1.0);
 			CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, 96, 0.9);
-			OctaveNoise3D mountainsNoise =       new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5);
+			OctaveNoise3D mountainsNoise =       new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.5);
+			mountainsNoise.initialize(rng);
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 1.5, 0.17, 0.6, 0.0);
 			CraterDistributionSettings cds = new CraterDistributionSettings(craterCnt, minsize, maxsize, minStrength, maxStrength, flattenedStart, flattenedEnd, nc, 0.8);
 			startTime = System.currentTimeMillis();
@@ -52,6 +54,7 @@ public class CraterGeneratorTest {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		NoisemapGenerator.cleanUp();
 	}
 	
 }

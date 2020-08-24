@@ -9,12 +9,17 @@ public class OctaveNoise2D extends NoiseFunction {
 	private double lacunarity;
 	private int octaves;
 	
-	public OctaveNoise2D(Random rng, int width, int height, int octaves, double lacunarity, double persistence) {
+	public OctaveNoise2D(int width, int height, int octaves, double lacunarity, double persistence) {
 		super(width, height, 1);
-		this.noise = new PerlinNoise2D(rng, (int)(width * octaves), (int)(height * octaves));
+		this.noise = new PerlinNoise2D((int)(width * octaves), (int)(height * octaves));
 		this.persistence = persistence;
 		this.lacunarity = lacunarity;
 		this.octaves = octaves;
+	}
+	
+	@Override
+	public void initialize(Random rng) {
+		this.noise.initialize(rng);
 	}
 	
 	public double sample(double x, double y, double z) {

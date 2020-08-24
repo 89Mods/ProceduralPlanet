@@ -116,6 +116,10 @@ public class CraterGenerator {
 			return this;
 		}
 		
+		public static CraterConfig genBowlOnlyConfig(double size, double craterStrength, double perturbStrength, double perturbScale, double p1, double p2) {
+			return new CraterConfig(size, craterStrength, perturbStrength, perturbScale, p1, p2, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
+		}
+		
 		@Override
 		public String toString() {
 			String s = String.format("Size: %#.4f", this.size);
@@ -153,7 +157,8 @@ public class CraterGenerator {
 		
 		double enddist = -Math.log((1.0 / 512.0) / cc.craterStrength) / (s * Math.log(cc.p2)) * Math.max(1, (map.length / 4096.0));
 		
-		PerlinNoise3D noise3d = new PerlinNoise3D(rng, 8, 8, 8);
+		PerlinNoise3D noise3d = new PerlinNoise3D(8, 8, 8);
+		noise3d.initialize(rng);
 		
 		lat %= 180.0;
 		lon %= 360.0;
@@ -413,7 +418,7 @@ public class CraterGenerator {
 		for(int i = 0; i < settings.craterCount; i++) {
 			double lat = rng.nextDouble() * 160.0 + 10.0;
 			double lon = rng.nextDouble() * 360.0;
-			boolean shouldPlace = distributionMap[(int)(lon / 360.0 * distributionMap.length)][(int)(lat / 180.0 * distributionMap[0].length)];
+			boolean shouldPlace = distributionMap == null ? true : distributionMap[(int)(lon / 360.0 * distributionMap.length)][(int)(lat / 180.0 * distributionMap[0].length)];
 			if(!shouldPlace) {
 				i--;
 				tries++;
@@ -457,7 +462,8 @@ public class CraterGenerator {
 			BufferedImage testRes = new BufferedImage(4096, 2048, BufferedImage.TYPE_INT_RGB);
 			
 			RanMT rng = new RanMT().seedCompletely();
-			OctaveNoise3D mountainsNoise =          new OctaveNoise3D(rng, 24, 24, 24, 6, 2.0, 0.5);
+			OctaveNoise3D mountainsNoise =          new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.5);
+			mountainsNoise.initialize(rng);
 			long startTime = System.currentTimeMillis();
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 3.8, 0.17, 0.6, 0.0);
 			CraterConfig cc = new CraterConfig(5, 0.3, 0.2, 0.4, 1.0, 4.8, -10.0, 0.25, 4.2, 0.1, 0.4, 30, 75, 1.0);
@@ -497,7 +503,8 @@ public class CraterGenerator {
 			ImageIO.write(testRes, "png", new File("crosssection.png"));
 			
 			testRes = new BufferedImage(900, 200, BufferedImage.TYPE_INT_RGB);
-			OctaveNoise2D noise2d = new OctaveNoise2D(rng, 4, 4, 4, 0.5, 2.0);
+			OctaveNoise2D noise2d = new OctaveNoise2D(4, 4, 4, 0.5, 2.0);
+			noise2d.initialize(rng);
 			int prevy = Integer.MAX_VALUE;
 			g = (Graphics2D)testRes.getGraphics();
 			g.setColor(Color.WHITE);

@@ -9,12 +9,17 @@ public class OctaveWorley extends NoiseFunction {
 	private double lacunarity;
 	private int octaves;
 	
-	public OctaveWorley(Random rng, int width, int height, int depth, int octaves, double lacunarity, double persistence) {
+	public OctaveWorley(int width, int height, int depth, int octaves, double lacunarity, double persistence) {
 		super(width, height, depth);
-		this.noise = new WorleyNoise(rng, (int)(width * octaves), (int)(height * octaves), (int)(depth * octaves));
+		this.noise = new WorleyNoise((int)(width * octaves), (int)(height * octaves), (int)(depth * octaves));
 		this.persistence = persistence;
 		this.lacunarity = lacunarity;
 		this.octaves = octaves;
+	}
+	
+	@Override
+	public void initialize(Random rng) {
+		this.noise.initialize(rng);
 	}
 	
 	public double sample(double x, double y, double z) {

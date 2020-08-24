@@ -6,9 +6,13 @@ public class PerlinNoise3D extends NoiseFunction {
 	
 	private double[][][][] noiseMap;
 	
-	public PerlinNoise3D(Random rng, int width, int height, int depth) {
+	public PerlinNoise3D(int width, int height, int depth) {
 		super(width, height, depth);
 		this.noiseMap = new double[width + 1][height + 1][depth + 1][3];
+	}
+	
+	@Override
+	public void initialize(Random rng) {
 		for(int i = 0; i < width + 1; i++) {
 			for(int j = 0; j < height + 1; j++) {
 				for(int k = 0; k < depth + 1; k++) {
