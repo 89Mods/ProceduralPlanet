@@ -2,10 +2,6 @@ package theGhastModding.planetGen.utils;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-
-import javax.imageio.ImageIO;
 
 public class MapUtils {
 	
@@ -20,26 +16,7 @@ public class MapUtils {
 		color[2]   = color[2] * (1.0 - multiplier) + newColor[2] * multiplier;
 	}
 	
-	public static void printMap(String file, double[][] map) {
-		try {
-			FileOutputStream fos = new FileOutputStream(file);
-			for(int i = 0; i < map.length; i++) {
-				StringBuilder line = new StringBuilder();
-				for(int j = 0; j < map[0].length; j++) {
-					line.append(String.format("%.2f\t\t", map[i][j]));
-				}
-				line.append("\r\n");
-				fos.write(line.toString().getBytes());
-			}
-			fos.close();
-		}catch(Exception e) {
-			System.err.println("Error saving raw map data: ");
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
-	public static void displayMap(String file, double[][] map) throws Exception {
+	public static BufferedImage renderMap(double[][] map) throws Exception {
 		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_RGB);
 		for(int i = 0; i < map.length; i++) {
 			for(int j = 0; j < map[0].length; j++) {
@@ -50,10 +27,10 @@ public class MapUtils {
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
 		}
-		ImageIO.write(img, "png", new File(file));
+		return img;
 	}
 	
-	public static void save16Bit(String file, double[][] map) throws Exception {
+	public static BufferedImage render16bit(double[][] map) throws Exception {
 		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_ARGB);
 		for(int i = 0; i < map.length; i++) {
 			for(int j = 0; j < map[0].length; j++) {
@@ -63,7 +40,7 @@ public class MapUtils {
 				img.setRGB(i, j, (((col >> 0) & 0xFF) << 24) | (((col >> 8) & 0xFF) << 8));
 			}
 		}
-		ImageIO.write(img, "png", new File(file));
+		return img;
 	}
 	
 }

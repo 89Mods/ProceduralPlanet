@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 
@@ -73,6 +74,353 @@ public class GraymoonGen {
 		}
 	}
 	
+	public static GeneratorResult generate(Random rng, GraymoonGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
+		GeneratorResult result = new GeneratorResult();
+		settings.mariaNoise.noise.initialize(rng);
+		settings.mountainNoise.noise.initialize(rng);
+		settings.groundNoiseLargeDetail.noise.initialize(rng);
+		settings.groundNoiseMediumDetail.noise.initialize(rng);
+		settings.mountainsNoise.noise.initialize(rng);
+		settings.craterMountainsNoise.noise.initialize(rng);
+		settings.secondaryNoise.noise.initialize(rng);
+		settings.colorNoise.noise.initialize(rng);
+		
+		final int width = settings.width;
+		final int height = settings.height;
+		final double resMul = 200000.0 / (double)settings.planetRadius * 0.85;
+		
+		double[][] mariaMap      = new double[width][height];
+		double[][] marias        = new double[width][height];
+		double[][] mariaCraters  = new double[width][height];
+		double[][] mountainMap   = new double[width][height];
+		double[][] ground        = new double[width][height];
+		double[][] mountains     = new double[width][height];
+		double[][] finalNoiseMap = new double[width][height];
+		double[][][] colorMap    = new double[width][height][3];
+		double[][][] biomeMap    = new double[width][height][3];
+		
+		double[][] tempMap        = new double[width][height];
+		double[][] mariaNoiseMuls = new double[width][height];
+		
+		if(debugProgress) System.out.println("Marias");
+		NoisemapGenerator.genNoisemap(mariaMap, settings.mariaNoise, null, resMul, debugProgress);
+		for(int i = 0; i < width; i++) {
+			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
+			double mul = 1;
+			if(settings.mariaLongitudeRange < 180) {
+				mul = Math.abs(longitude);
+				if(mul > settings.mariaLongitudeRange - settings.mariaFadeRange && mul < settings.mariaLongitudeRange) {
+					mul = 1.0 - (mul - (settings.mariaLongitudeRange - settings.mariaFadeRange)) / settings.mariaFadeRange;
+				}else if(mul >= settings.mariaLongitudeRange) mul = 0;
+				else if(mul <= settings.mariaLongitudeRange - settings.mariaFadeRange) mul = 1;
+			}
+			for(int j = 0; j < height; j++) {
+				double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
+				double mul2 = 1;
+				if(settings.mariaLatitudeRange < 90) {
+					mul2 = Math.abs(latitude);
+					if(mul2 > settings.mariaLatitudeRange - settings.mariaFadeRange && mul2 < settings.mariaLatitudeRange) {
+						mul2 = 1.0 - (mul2 - (settings.mariaLatitudeRange - settings.mariaFadeRange)) / settings.mariaFadeRange;
+					}else if(mul2 >= settings.mariaLatitudeRange) mul2 = 0;
+					else if(mul2 <= settings.mariaLatitudeRange - settings.mariaFadeRange) mul2 = 1;
+				}
+				
+				mariaMap[i][j] = mariaMap[i][j] * mul * mul2;
+				mariaMap[i][j] *= mariaMap[i][j];
+				mariaMap[i][j] = Math.max(0, Math.min(1, mariaMap[i][j]));
+				
+			}
+		}
+		//MapUtils.displayMap("mariaMap.png", mariaMap);
+		
+		for(int i = 0; i < marias.length; i++) {
+			for(int j = 0; j < marias[0].length; j++) {
+				marias[i][j] = (1.0 - mariaMap[i][j]) * 0.4;
+			}
+		}
+		
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				if(marias[i][j] < 0.23) {
+					marias[i][j] = 0.23;
+				}else {
+					marias[i][j] *= ((marias[i][j] - 0.23) * 3.0) + 1.0;
+					marias[i][j] = Math.min(0.4, marias[i][j]);
+				}
+			}
+		}
+		
+		if(debugProgress) ProgressBars.printBar();
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) mariaCraters[i][j] = 0.4;
+		CraterConfig mariaShapeCraterConfig = new CraterConfig();
+		mariaShapeCraterConfig.setPerturbStrength(0.2).setPerturbScale(0.4).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
+		mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
+		mariaShapeCraterConfig.setFullPeakSize(10).setRingThreshold(128).setRingFunctMul(1);
+		for(int i = 0; i < settings.mariaCraterCount; i++) {
+			if(debugProgress) ProgressBars.printProgress(i, settings.mariaCraterCount);
+			double lat = (rng.nextDouble() * 2 - 1) * (settings.mariaLatitudeRange - settings.mariaFadeRange / 2);
+			double lon = (rng.nextDouble() * 2 - 1) * (settings.mariaLongitudeRange - settings.mariaFadeRange / 2);
+			int px = (int)((lon + 180.0) / 360.0 * width);
+			int py = (int)((lat + 90.0) / 180.0 * height);
+			double val = marias[px][py];
+			if(val > 0.3 && val < 0.4) {
+				mariaShapeCraterConfig.setSize(200 + rng.nextInt(32)).setCraterStrength(0.5);
+				CraterGenerator.genCrater(mariaCraters, lat, lon, mariaShapeCraterConfig, null, rng);
+			}else {
+				i--;
+				continue;
+			}
+		}
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				mariaCraters[i][j] = Math.max(0.23, mariaCraters[i][j]);
+				marias[i][j] = Math.min(marias[i][j], mariaCraters[i][j]);
+			}
+		}
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				mariaNoiseMuls[i][j] = Math.max(0, Math.min(1, (marias[i][j] - 0.23) * 5.882352941));
+			}
+		}
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				//Post-scale depth because I'm too lazy to re-do all of the above code
+				if(marias[i][j] > 0.25) {
+					marias[i][j] = (marias[i][j] - 0.25) * 6.6666666;
+					marias[i][j] = CraterGenerator.biasFunction(marias[i][j], -0.65);
+					marias[i][j] *= marias[i][j];
+					marias[i][j] = marias[i][j] / 6.666666 + 0.25;
+				}
+				
+				marias[i][j] /= 0.4;
+				marias[i][j] = marias[i][j] * 0.3 + 0.1;
+			}
+		}
+		if(debugProgress) {
+			ProgressBars.printProgress(width - 1, width);
+			ProgressBars.finishProgress();
+		}
+		
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(marias), "png", new File("marias.png"));
+		
+		if(debugProgress) System.out.println("Biomes");
+		NoisemapGenerator.genNoisemap(mountainMap, settings.mountainNoise, null, resMul, debugProgress);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				double val = mountainMap[i][j];
+				val = Math.max(0, Math.min(1, Math.abs(val)));
+				if(val > 0.44) {
+					double h = val - 0.44;
+					h = h * 1.785 * 5.0;
+					mountainMap[i][j] = h;
+					mountainMap[i][j] *= mariaNoiseMuls[i][j];
+				}else mountainMap[i][j] = 0;
+			}
+		}
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				mountainMap[i][j] = Math.min(1, mountainMap[i][j]);
+			}
+		}
+		
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				int r,g,b;
+				r = g = b = 0;
+				if(mountainMap[i][j] > 0) {
+					double mul = (1.0 - Math.max(0, Math.min(1, mountainMap[i][j])));
+					g = (int)(g * mul);
+					b = (int)(b * mul);
+					r = (int)((1.0 - mul) * 255);
+				}
+				r = Math.max(0, Math.min(255, r));
+				g = Math.max(0, Math.min(255, g));
+				b = Math.max(0, Math.min(255, b));
+				img.setRGB(i, j, b | (g << 8) | (r << 16));
+			}
+		}
+		ImageIO.write(img, "png", new File("continents.png"));
+		
+		if(debugProgress) System.out.println("Ground");
+		NoisemapGenerator.genNoisemap(ground, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, mariaNoiseMuls, resMul, debugProgress);
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+		double inMariaMul = 0.15;
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				double mariaMul = mariaNoiseMuls[i][j];
+				
+				if(mariaMul > 0) {
+					double val = ground[i][j];
+					val = Math.abs(val);
+					val *= 0.4;
+					val *= mariaMul;
+					ground[i][j] = val;
+				}
+				if(mariaMul < inMariaMul) {
+					mariaMul = inMariaMul - mariaMul;
+					double val = ground[i][j];
+					val = Math.abs(val);
+					val *= 0.3;
+					val *= inMariaMul;
+					ground[i][j] = val;
+				}
+			}
+		}
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(ground), "png", new File("ground.png"));
+		
+		if(debugProgress) System.out.println("Mountains");
+		NoisemapGenerator.genNoisemap(mountains, settings.mountainsNoise, mountainMap, resMul, debugProgress);
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(mountains), "png", new File("mountains.png"));
+		
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				finalNoiseMap[i][j] = ground[i][j] + mountains[i][j] + 0.3;
+			}
+		}
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("complex.png"));
+		
+		if(debugProgress) {
+			System.out.println("Craters");
+			ProgressBars.printBar();
+		}
+		boolean[][] craterDistr = new boolean[1024][512];
+		boolean[][] mariaCraterDistr = new boolean[1024][512];
+		int mariaCnt = 0;
+		for(int i = 0; i < 1024; i++) {
+			int ix = (int)((double)i / 1024.0 * width);
+			for(int j = 0; j < 512; j++) {
+				int iy = (int)((double)j / 512.0 * height);
+				double val = marias[ix][iy];
+				craterDistr[i][j] = val >= 0.36;
+				mariaCraterDistr[i][j] = val < 0.36;
+				if(val < 0.35) mariaCnt++;
+			}
+		}
+		double mariaRatio = (double)mariaCnt / (double)(1024 * 512);
+		int inMariaCraterCount = (int)(mariaRatio * settings.smallCraterCount);
+		double cS = settings.bowlCraterConfig.ringThreshold / settings.craterMaxsize * (settings.craterMaxstrength - settings.craterMinstrength) + settings.craterMinstrength;
+		CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
+		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
+		if(debugProgress) ProgressBars.printProgress(24, 75);
+		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
+		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
+		if(debugProgress) ProgressBars.printProgress(49, 75);
+		cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
+		CraterGenerator.distributeCraters(mariaCraterDistr, finalNoiseMap, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, rng);
+		if(debugProgress) ProgressBars.printProgress(74, 75);
+		if(debugProgress) ProgressBars.finishProgress();
+		
+		if(debugProgress) System.out.println("Secondary Noise");
+		NoisemapGenerator.genNoisemap(tempMap, settings.secondaryNoise, null, resMul, debugProgress);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				double val = tempMap[i][j];
+				if(marias[i][j] < 0.4) {
+					val *= Math.max(0.075, (marias[i][j] / 0.4));
+				}
+				finalNoiseMap[i][j] += val;
+			}
+		}
+		
+		int biggestPixelValue = 0;
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				double v = finalNoiseMap[i][j];
+				int col  = (int)(v * 255.0);
+				int r,g,b;
+				r = g = b = Math.max(0, Math.min(255, col));
+				if(r > biggestPixelValue) {
+					biggestPixelValue = r;
+				}
+				img.setRGB(i, j, b | (g << 8) | (r << 16));
+			}
+		}
+		if(debugProgress) System.err.println(biggestPixelValue);
+		result.heightmap = img;
+		result.heightmap16 = MapUtils.render16bit(finalNoiseMap);
+		if(debugSteps) {
+			ImageIO.write(img, "png", new File("graymoon.png"));
+			ImageIO.write(result.heightmap16, "png", new File("graymoon_16.png"));
+		}
+		if(debugProgress) System.out.println("Done.");
+		
+		if(debugProgress) System.out.println("Color Map!");
+		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		NoisemapGenerator.genNoisemap(tempMap, settings.colorNoise, null, resMul, debugProgress);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
+				if(mariaMul < 0) mariaMul = 0;
+				double mountainMul = Math.max(0, Math.min(1, mountainMap[i][j]));
+				double[] rgb = new double[] {
+						mariaMul * (mountainMul * settings.mountainsColor[0] + (1.0 - mountainMul) * settings.normalColor[0]) + (1.0 - mariaMul) * settings.mariasColor[0],
+						mariaMul * (mountainMul * settings.mountainsColor[1] + (1.0 - mountainMul) * settings.normalColor[1]) + (1.0 - mariaMul) * settings.mariasColor[1],
+						mariaMul * (mountainMul * settings.mountainsColor[2] + (1.0 - mountainMul) * settings.normalColor[2]) + (1.0 - mariaMul) * settings.mariasColor[2],
+				};
+				double mul = tempMap[i][j];
+				mul += 0.5;
+				if(mul > mul) mul = 1;
+				rgb[0] = mul * rgb[0];
+				rgb[1] = mul * rgb[1];
+				rgb[2] = mul * rgb[2];
+				double heightCol = finalNoiseMap[i][j];
+				heightCol *= 0.1;
+				rgb[0] += heightCol;
+				rgb[1] += heightCol;
+				rgb[2] += heightCol;
+				
+				colorMap[i][j] = rgb;
+			}
+		}
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
+				int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
+				int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
+				
+				img.setRGB(i, j, b | (g << 8) | (r << 16));
+			}
+		}
+		result.colorMap = img;
+		if(debugSteps) ImageIO.write(img, "png", new File("colors.png"));
+		if(debugProgress) System.out.println("Done.");
+		
+		if(debugProgress) System.out.println("Biome map");
+		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		if(debugProgress) ProgressBars.printBar();
+		for(int i = 0; i < width; i++) {
+			if(debugProgress) ProgressBars.printProgress(i, width);
+			for(int j = 0; j < height; j++) {
+				if(marias[i][j] < 0.35) {
+					biomeMap[i][j] = settings.mariasBiomeColor;
+				}else {
+					if(mountainMap[i][j] > 0.25) {
+						biomeMap[i][j] = settings.mountainsBiomeColor;
+					}else {
+						biomeMap[i][j] = settings.normalBiomeColor;
+					}
+				}
+			}
+		}
+		if(debugProgress) ProgressBars.finishProgress();
+		
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				int r = (int)Math.max(0, Math.min(255, biomeMap[i][j][0] * 255.0));
+				int g = (int)Math.max(0, Math.min(255, biomeMap[i][j][1] * 255.0));
+				int b = (int)Math.max(0, Math.min(255, biomeMap[i][j][2] * 255.0));
+				
+				img.setRGB(i, j, b | (g << 8) | (r << 16));
+			}
+		}
+		result.biomeMap = img;
+		if(debugSteps) ImageIO.write(img, "png", new File("biomes.png"));
+		if(debugProgress) System.out.println("Done.");
+		return result;
+	}
+	
 	public static void main(String[] args) {
 		try {
 			boolean test = true;
@@ -96,343 +444,11 @@ public class GraymoonGen {
 			}
 			
 			GraymoonGenSettings settings = new GraymoonGenSettings();
-			settings.mariaNoise.noise.initialize(rng);
-			settings.mountainNoise.noise.initialize(rng);
-			settings.groundNoiseLargeDetail.noise.initialize(rng);
-			settings.groundNoiseMediumDetail.noise.initialize(rng);
-			settings.mountainsNoise.noise.initialize(rng);
-			settings.craterMountainsNoise.noise.initialize(rng);
-			settings.secondaryNoise.noise.initialize(rng);
-			settings.colorNoise.noise.initialize(rng);
-			
-			final int width = settings.width;
-			final int height = settings.height;
-			final double resMul = 200000.0 / (double)settings.planetRadius * 0.85;
-			
-			double[][] mariaMap =      new double[width][height];
-			double[][] marias   =      new double[width][height];
-			double[][] mariaCraters =  new double[width][height];
-			double[][] mountainMap =   new double[width][height];
-			double[][] ground =        new double[width][height];
-			double[][] mountains =     new double[width][height];
-			double[][] finalNoiseMap = new double[width][height];
-			double[][][] colorMap =    new double[width][height][3];
-			double[][][] biomeMap =    new double[width][height][3];
-			
-			double[][] tempMap =        new double[width][height];
-			double[][] mariaNoiseMuls = new double[width][height];
-			
-			System.out.println("Marias");
-			NoisemapGenerator.genNoisemap(mariaMap, settings.mariaNoise, null, resMul, true);
-			for(int i = 0; i < width; i++) {
-				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
-				double mul = 1;
-				if(settings.mariaLongitudeRange < 180) {
-					mul = Math.abs(longitude);
-					if(mul > settings.mariaLongitudeRange - settings.mariaFadeRange && mul < settings.mariaLongitudeRange) {
-						mul = 1.0 - (mul - (settings.mariaLongitudeRange - settings.mariaFadeRange)) / settings.mariaFadeRange;
-					}else if(mul >= settings.mariaLongitudeRange) mul = 0;
-					else if(mul <= settings.mariaLongitudeRange - settings.mariaFadeRange) mul = 1;
-				}
-				for(int j = 0; j < height; j++) {
-					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
-					double mul2 = 1;
-					if(settings.mariaLatitudeRange < 90) {
-						mul2 = Math.abs(latitude);
-						if(mul2 > settings.mariaLatitudeRange - settings.mariaFadeRange && mul2 < settings.mariaLatitudeRange) {
-							mul2 = 1.0 - (mul2 - (settings.mariaLatitudeRange - settings.mariaFadeRange)) / settings.mariaFadeRange;
-						}else if(mul2 >= settings.mariaLatitudeRange) mul2 = 0;
-						else if(mul2 <= settings.mariaLatitudeRange - settings.mariaFadeRange) mul2 = 1;
-					}
-					
-					mariaMap[i][j] = mariaMap[i][j] * mul * mul2;
-					mariaMap[i][j] *= mariaMap[i][j];
-					mariaMap[i][j] = Math.max(0, Math.min(1, mariaMap[i][j]));
-					
-				}
-			}
-			//MapUtils.displayMap("mariaMap.png", mariaMap);
-			
-			for(int i = 0; i < marias.length; i++) {
-				for(int j = 0; j < marias[0].length; j++) {
-					marias[i][j] = (1.0 - mariaMap[i][j]) * 0.4;
-				}
-			}
-			
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					if(marias[i][j] < 0.23) {
-						marias[i][j] = 0.23;
-					}else {
-						marias[i][j] *= ((marias[i][j] - 0.23) * 3.0) + 1.0;
-						marias[i][j] = Math.min(0.4, marias[i][j]);
-					}
-				}
-			}
-			
-			ProgressBars.printBar();
-			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) mariaCraters[i][j] = 0.4;
-			CraterConfig mariaShapeCraterConfig = new CraterConfig();
-			mariaShapeCraterConfig.setPerturbStrength(0.2).setPerturbScale(0.4).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
-			mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
-			mariaShapeCraterConfig.setFullPeakSize(10).setRingThreshold(128).setRingFunctMul(1);
-			for(int i = 0; i < settings.mariaCraterCount; i++) {
-				ProgressBars.printProgress(i, settings.mariaCraterCount);
-				double lat = (rng.nextDouble() * 2 - 1) * (settings.mariaLatitudeRange - settings.mariaFadeRange / 2);
-				double lon = (rng.nextDouble() * 2 - 1) * (settings.mariaLongitudeRange - settings.mariaFadeRange / 2);
-				int px = (int)((lon + 180.0) / 360.0 * width);
-				int py = (int)((lat + 90.0) / 180.0 * height);
-				double val = marias[px][py];
-				if(val > 0.3 && val < 0.4) {
-					mariaShapeCraterConfig.setSize(200 + rng.nextInt(32)).setCraterStrength(0.5);
-					CraterGenerator.genCrater(mariaCraters, lat, lon, mariaShapeCraterConfig, null, rng);
-				}else {
-					i--;
-					continue;
-				}
-			}
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					mariaCraters[i][j] = Math.max(0.23, mariaCraters[i][j]);
-					marias[i][j] = Math.min(marias[i][j], mariaCraters[i][j]);
-				}
-			}
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					mariaNoiseMuls[i][j] = Math.max(0, Math.min(1, (marias[i][j] - 0.23) * 5.882352941));
-				}
-			}
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					//Post-scale depth because I'm too lazy to re-do all of the above code
-					if(marias[i][j] > 0.25) {
-						marias[i][j] = (marias[i][j] - 0.25) * 6.6666666;
-						marias[i][j] = CraterGenerator.biasFunction(marias[i][j], -0.65);
-						marias[i][j] *= marias[i][j];
-						marias[i][j] = marias[i][j] / 6.666666 + 0.25;
-					}
-					
-					marias[i][j] /= 0.4;
-					marias[i][j] = marias[i][j] * 0.3 + 0.1;
-				}
-			}
-			ProgressBars.printProgress(width - 1, width);
-			ProgressBars.finishProgress();
-			
-			MapUtils.displayMap("marias.png", marias);
-			
-			System.out.println("Biomes");
-			NoisemapGenerator.genNoisemap(mountainMap, settings.mountainNoise, null, resMul, true);
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					double val = mountainMap[i][j];
-					val = Math.max(0, Math.min(1, Math.abs(val)));
-					if(val > 0.44) {
-						double h = val - 0.44;
-						h = h * 1.785 * 5.0;
-						mountainMap[i][j] = h;
-						mountainMap[i][j] *= mariaNoiseMuls[i][j];
-					}else mountainMap[i][j] = 0;
-				}
-			}
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					mountainMap[i][j] = Math.min(1, mountainMap[i][j]);
-				}
-			}
-			
-			BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					int r,g,b;
-					r = g = b = 0;
-					if(mountainMap[i][j] > 0) {
-						double mul = (1.0 - Math.max(0, Math.min(1, mountainMap[i][j])));
-						g = (int)(g * mul);
-						b = (int)(b * mul);
-						r = (int)((1.0 - mul) * 255);
-					}
-					r = Math.max(0, Math.min(255, r));
-					g = Math.max(0, Math.min(255, g));
-					b = Math.max(0, Math.min(255, b));
-					img.setRGB(i, j, b | (g << 8) | (r << 16));
-				}
-			}
-			ImageIO.write(img, "png", new File("continents.png"));
-			
-			System.out.println("Ground");
-			
-			NoisemapGenerator.genNoisemap(ground, settings.groundNoiseLargeDetail, null, resMul, true);
-			NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, mariaNoiseMuls, resMul, true);
-			for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
-			double inMariaMul = 0.15;
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					double mariaMul = mariaNoiseMuls[i][j];
-					
-					if(mariaMul > 0) {
-						double val = ground[i][j];
-						val = Math.abs(val);
-						val *= 0.4;
-						val *= mariaMul;
-						ground[i][j] = val;
-					}
-					if(mariaMul < inMariaMul) {
-						mariaMul = inMariaMul - mariaMul;
-						double val = ground[i][j];
-						val = Math.abs(val);
-						val *= 0.3;
-						val *= inMariaMul;
-						ground[i][j] = val;
-					}
-				}
-			}
-			MapUtils.displayMap("ground.png", ground);
-			
-			System.out.println("Mountains");
-			NoisemapGenerator.genNoisemap(mountains, settings.mountainsNoise, mountainMap, resMul, true);
-			MapUtils.displayMap("mountains.png", mountains);
-			
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					finalNoiseMap[i][j] = ground[i][j] + mountains[i][j] + 0.3;
-				}
-			}
-			MapUtils.displayMap("complex.png", finalNoiseMap);
-			
-			System.out.println("Craters");
-			ProgressBars.printBar();
-			boolean[][] craterDistr = new boolean[1024][512];
-			boolean[][] mariaCraterDistr = new boolean[1024][512];
-			int mariaCnt = 0;
-			for(int i = 0; i < 1024; i++) {
-				int ix = (int)((double)i / 1024.0 * width);
-				for(int j = 0; j < 512; j++) {
-					int iy = (int)((double)j / 512.0 * height);
-					double val = marias[ix][iy];
-					craterDistr[i][j] = val >= 0.36;
-					mariaCraterDistr[i][j] = val < 0.36;
-					if(val < 0.35) mariaCnt++;
-				}
-			}
-			double mariaRatio = (double)mariaCnt / (double)(1024 * 512);
-			int inMariaCraterCount = (int)(mariaRatio * settings.smallCraterCount);
-			double cS = settings.bowlCraterConfig.ringThreshold / settings.craterMaxsize * (settings.craterMaxstrength - settings.craterMinstrength) + settings.craterMinstrength;
-			CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
-			CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
-			ProgressBars.printProgress(24, 75);
-			cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
-			CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
-			ProgressBars.printProgress(49, 75);
-			cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
-			CraterGenerator.distributeCraters(mariaCraterDistr, finalNoiseMap, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, rng);
-			ProgressBars.printProgress(74, 75);
-			ProgressBars.finishProgress();
-			
-			System.out.println("Secondary Noise");
-			NoisemapGenerator.genNoisemap(tempMap, settings.secondaryNoise, null, resMul, true);
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					double val = tempMap[i][j];
-					if(marias[i][j] < 0.4) {
-						val *= Math.max(0.075, (marias[i][j] / 0.4));
-					}
-					finalNoiseMap[i][j] += val;
-				}
-			}
-			
-			int biggestPixelValue = 0;
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					double v = finalNoiseMap[i][j];
-					int col  = (int)(v * 255.0);
-					int r,g,b;
-					r = g = b = Math.max(0, Math.min(255, col));
-					if(r > biggestPixelValue) {
-						biggestPixelValue = r;
-					}
-					img.setRGB(i, j, b | (g << 8) | (r << 16));
-				}
-			}
-			System.err.println(biggestPixelValue);
-			ImageIO.write(img, "png", new File("graymun.png"));
-			MapUtils.save16Bit("graymun_16.png", finalNoiseMap);
-			ImageIO.write(img, "png", new File("past_outputs/" + name + ".png"));
-			MapUtils.save16Bit("past_outputs/" + name + "_16.png", finalNoiseMap);
-			System.out.println("Done.");
-			
-			System.out.println("Color Map!");
-			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			NoisemapGenerator.genNoisemap(tempMap, settings.colorNoise, null, resMul, true);
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
-					if(mariaMul < 0) mariaMul = 0;
-					double mountainMul = Math.max(0, Math.min(1, mountainMap[i][j]));
-					double[] rgb = new double[] {
-							mariaMul * (mountainMul * settings.mountainsColor[0] + (1.0 - mountainMul) * settings.normalColor[0]) + (1.0 - mariaMul) * settings.mariasColor[0],
-							mariaMul * (mountainMul * settings.mountainsColor[1] + (1.0 - mountainMul) * settings.normalColor[1]) + (1.0 - mariaMul) * settings.mariasColor[1],
-							mariaMul * (mountainMul * settings.mountainsColor[2] + (1.0 - mountainMul) * settings.normalColor[2]) + (1.0 - mariaMul) * settings.mariasColor[2],
-					};
-					double mul = tempMap[i][j];
-					mul += 0.5;
-					if(mul > mul) mul = 1;
-					rgb[0] = mul * rgb[0];
-					rgb[1] = mul * rgb[1];
-					rgb[2] = mul * rgb[2];
-					double heightCol = finalNoiseMap[i][j];
-					heightCol *= 0.1;
-					rgb[0] += heightCol;
-					rgb[1] += heightCol;
-					rgb[2] += heightCol;
-					
-					colorMap[i][j] = rgb;
-				}
-			}
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
-					int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
-					int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
-					
-					img.setRGB(i, j, b | (g << 8) | (r << 16));
-				}
-			}
-			ImageIO.write(img, "png", new File("colors.png"));
-			ImageIO.write(img, "png", new File("past_outputs/" + name + "_colors.png"));
-			System.out.println("Done.");
-			
-			System.out.println("Biome map");
-			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			ProgressBars.printBar();
-			for(int i = 0; i < width; i++) {
-				ProgressBars.printProgress(i, width);
-				for(int j = 0; j < height; j++) {
-					if(marias[i][j] < 0.35) {
-						biomeMap[i][j] = settings.mariasBiomeColor;
-					}else {
-						if(mountainMap[i][j] > 0.25) {
-							biomeMap[i][j] = settings.mountainsBiomeColor;
-						}else {
-							biomeMap[i][j] = settings.normalBiomeColor;
-						}
-					}
-				}
-			}
-			ProgressBars.finishProgress();
-			
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					int r = (int)Math.max(0, Math.min(255, biomeMap[i][j][0] * 255.0));
-					int g = (int)Math.max(0, Math.min(255, biomeMap[i][j][1] * 255.0));
-					int b = (int)Math.max(0, Math.min(255, biomeMap[i][j][2] * 255.0));
-					
-					img.setRGB(i, j, b | (g << 8) | (r << 16));
-				}
-			}
-			ImageIO.write(img, "png", new File("biomes.png"));
-			ImageIO.write(img, "png", new File("past_outputs/" + name + "_biomes.png"));
-			System.out.println("Done.");
+			GeneratorResult res = GraymoonGen.generate(rng, settings, true, true, test);
+			ImageIO.write(res.heightmap, "png", new File("past_outputs/" + name + ".png"));
+			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
+			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));
+			ImageIO.write(res.biomeMap, "png", new File("past_outputs/" + name + "_biomes.png"));
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();
