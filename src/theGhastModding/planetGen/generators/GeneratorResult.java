@@ -6,6 +6,7 @@ public class GeneratorResult {
 	
 	public BufferedImage heightmap   = null;
 	public BufferedImage heightmap16 = null;
+	public double[][] heightmapRaw   = null;
 	public BufferedImage colorMap    = null;
 	public BufferedImage biomeMap    = null;
 	
