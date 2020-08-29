@@ -480,11 +480,13 @@ public class ComplexSurface {
 		if(debugProgress) System.err.println(biggestPixelValue);
 		result.heightmap = img;
 		result.heightmap16 = MapUtils.render16bit(finalNoiseMap);
+		result.heightmap24 = MapUtils.render24bit(finalNoiseMap);
 		result.heightmapRaw = new double[width][height];
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) result.heightmapRaw[i][j] = finalNoiseMap[i][j];
 		if(debugSteps) {
 			ImageIO.write(img, "png", new File("complex.png"));
 			ImageIO.write(result.heightmap16, "png", new File("complex_16.png"));
+			ImageIO.write(result.heightmap24, "png", new File("complex_24.png"));
 		}
 		if(debugProgress) System.out.println("Done.");
 		//long name = System.currentTimeMillis();

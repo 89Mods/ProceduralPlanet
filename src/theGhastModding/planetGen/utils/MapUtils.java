@@ -30,14 +30,27 @@ public class MapUtils {
 		return img;
 	}
 	
+	public static BufferedImage render24bit(double[][] map) throws Exception {
+		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_RGB);
+		for(int i = 0; i < map.length; i++) {
+			for(int j = 0; j < map[0].length; j++) {
+				double v = map[i][j];
+				int col = (int)(v * 16777215.0);
+				col = Math.max(0, Math.min(16777215, col));
+				img.setRGB(i, j, col);
+			}
+		}
+		return img;
+	}
+	
 	public static BufferedImage render16bit(double[][] map) throws Exception {
-		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage img = new BufferedImage(map.length, map[0].length, BufferedImage.TYPE_INT_RGB);
 		for(int i = 0; i < map.length; i++) {
 			for(int j = 0; j < map[0].length; j++) {
 				double v = map[i][j];
 				int col = (int)(v * 65535.0);
 				col = Math.max(0, Math.min(65535, col));
-				img.setRGB(i, j, (((col >> 0) & 0xFF) << 24) | (((col >> 8) & 0xFF) << 8));
+				img.setRGB(i, j, col);
 			}
 		}
 		return img;
