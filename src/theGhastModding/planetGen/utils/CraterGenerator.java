@@ -141,8 +141,38 @@ public class CraterGenerator {
 		
 	}
 	
+	private double[] acosCache;
+	private double stride;
+	private PerlinNoise3D noise3d;
+	private NoiseConfig perturbNoiseConfig;
+	
+	public CraterGenerator(int width, int height) {
+		this.noise3d = new PerlinNoise3D(8, 8, 8);
+		this.perturbNoiseConfig = new NoiseConfig(noise3d);
+		double stride = Math.sqrt((double)width * (double)width + (double)height * (double)height) * 2.0;
+		int len = (int)stride;
+		stride = 1.0 / stride;
+		this.stride = stride;
+		acosCache = new double[len + 1];
+		for(int i = 0; i < len + 1; i++) {
+			acosCache[i] = Math.acos(stride * i);
+		}
+	}
+	
+	private double getSignCorrectedAcosAt(int indx) {
+		if(indx < 0) return (Math.PI / 2.0) + ((Math.PI / 2.0) - acosCache[-indx]);
+		return acosCache[indx];
+	}
+	
+	private double internalAcos(double x) {
+		int indx = (int)(x / stride);
+		int indx2 = indx + (indx == acosCache.length - 1 ? 0 : 1);
+		double d = (x - (double)(indx * stride)) / stride;
+		return (1.0 - d) * getSignCorrectedAcosAt(indx) + d * getSignCorrectedAcosAt(indx2);
+	}
+	
 	//strength *= 1.0 / size
-	public static boolean genCrater(double[][] map, double lat, double lon, CraterConfig cc, NoiseConfig peakNoise, Random rng) {
+	public boolean genCrater(double[][] map, double lat, double lon, CraterConfig cc, NoiseConfig peakNoise, Random rng) {
 		double baseHeight = map[(int)((lon + 180.0) / 360.0 * map.length)][(int)((lat + 90.0) / 180.0 * map[0].length)];
 		double th = cc.craterStrength * 1.1;
 		if(cc.floorHeight >= 0) return false;
@@ -155,33 +185,38 @@ public class CraterGenerator {
 		double ejectaPerturbStrength = cc.ejectaPerturbStrength * cc.size;
 		double ejectaStretch = 1.0 / cc.ejectaStretch;
 		
-		double enddist = -Math.log((1.0 / 512.0) / cc.craterStrength) / (s * Math.log(cc.p2)) * Math.max(1, (map.length / 4096.0));
+		double enddist = -Math.log((1.0 / 65535.0) / cc.craterStrength) / (s * Math.log(cc.p2)) * Math.max(1, (map.length / 4096.0));
 		
-		PerlinNoise3D noise3d = new PerlinNoise3D(8, 8, 8);
 		noise3d.initialize(rng);
 		
 		lat %= 180.0;
 		lon %= 360.0;
 		
-		NoiseConfig nc = new NoiseConfig(noise3d).setIsRidged(false).setNoiseStrength(perturbStrength).setNoiseScale(cc.perturbScale).setDistortStrength(0.125).setNoiseOffset(0);
+		perturbNoiseConfig.setIsRidged(false).setNoiseStrength(perturbStrength).setNoiseScale(cc.perturbScale).setDistortStrength(0.125).setNoiseOffset(0);
 		double[] noise =  new double[map.length * 2 + 1];
 		double[] eNoise = new double[map.length * 2 + 1];
 		if(perturbStrength <= 0 || cc.perturbScale <= 0) Arrays.fill(noise, 0);
 		else {
 			for(int i = 0; i < map.length * 2 + 1; i++) {
-				noise[i] =  NoiseUtils.sampleSpherableNoise((double)i / (double)(map.length * 2 + 1) * 24, 12 + 1, 24, 24, nc);
+				noise[i] =  NoiseUtils.sampleSpherableNoise((double)i / (double)(map.length * 2 + 1) * 24, 12 + 1, 24, 24, perturbNoiseConfig);
 			}
 		}
 		if(ejectaPerturbStrength <= 0 || cc.ejectaPerturbScale <= 0) Arrays.fill(eNoise, 0);
 		else {
-			nc.setNoiseStrength(ejectaPerturbStrength).setNoiseScale(cc.ejectaPerturbScale);
+			perturbNoiseConfig.setNoiseStrength(ejectaPerturbStrength).setNoiseScale(cc.ejectaPerturbScale);
 			for(int i = 0; i < map.length * 2 + 1; i++) {
-				eNoise[i] = NoiseUtils.sampleSpherableNoise((double)i / (double)(map.length * 2 + 1) * 24, 12 - 1, 24, 24, nc);
+				eNoise[i] = NoiseUtils.sampleSpherableNoise((double)i / (double)(map.length * 2 + 1) * 24, 12 - 1, 24, 24, perturbNoiseConfig);
 			}
 		}
 		
 		double sinLat = Math.sin(Math.toRadians(lat));
 		double cosLat = Math.cos(Math.toRadians(lat));
+		
+		double[] diffLongCache = new double[map.length];
+		for(int i = 0; i < map.length; i++) {
+			double longitude = (double)(i - map.length / 2) / (map.length / 2.0) * 180.0;
+			diffLongCache[i] = Math.cos(Math.toRadians(Math.abs(lon - longitude)));
+		}
 		
 		for(int j = 0; j < map[0].length; j++) {
 			double latitude = (double)(j - map[0].length / 2) / (map[0].length / 2.0) * 90.0;
@@ -223,16 +258,15 @@ public class CraterGenerator {
 			for(int i = istart; i < iend; i++) {
 				double longitude = (double)(i - map.length / 2) / (map.length / 2.0) * 180.0;
 				
-				double diffLong = Math.toRadians(Math.abs(lon - longitude));
-				
-				double b = cosLat * cosLatitude * Math.cos(diffLong);
-				dist = Math.acos(a + b) / Math.PI;
+				double b = cosLat * cosLatitude * diffLongCache[i];
+				dist = internalAcos(a + b) / Math.PI;
 				dist *= 2048;
 				
 				double crater_funct_x = dist;
 				if(Math.abs(crater_funct_x) >= enddist) continue;
 				
 				double angle = SphereUtils.angleFromCoordinate(lat, lon, latitude, longitude);
+				
 				if(Double.isNaN(angle)) angle = 0.1; // This always happens exactly in the dead-center of the crater. Workaround is to set the angle to some fixed value.
 				double h =  noise[(int)(angle / 360.0 * map.length * 2)];
 				double eh = eNoise[(int)(angle / 360.0 * map.length * 2)];
@@ -254,7 +288,7 @@ public class CraterGenerator {
 		return a * h + b * (1.0 - h) - k * h * (1.0 - h);
 	}
 	
-	public static double craterFunct(double x, double ejectaX, double ejectaPerturb, double s, double p1, double p2, double terrainHeight, double baseHeight, double craterStrength, double ejectaStrength, double ejectaStretch, double ringFunctMul, double floorHeight, NoiseConfig peakNoise, double lat, double lon, double fullPeakSize, double ringThreshold) {
+	public double craterFunct(double x, double ejectaX, double ejectaPerturb, double s, double p1, double p2, double terrainHeight, double baseHeight, double craterStrength, double ejectaStrength, double ejectaStretch, double ringFunctMul, double floorHeight, NoiseConfig peakNoise, double lat, double lon, double fullPeakSize, double ringThreshold) {
 		double rS = 1.0 / s;
 		
 		double peak = 0;
@@ -289,7 +323,8 @@ public class CraterGenerator {
 	// Function taken from https://www.youtube.com/watch?v=lctXaT9pxA0
 	public static double biasFunction(double x, double bias) {
 		// Adjust input to make control feel more linear
-		double k = Math.pow(1.0 - bias, 3.0);
+		double k = 1.0 - bias;
+		k = k * k * k;
 		// Equation based on: shadertoy.com/view/Xd2yRd
 		return (x * k) / (x * k - x + 1.0);
 	}
@@ -412,6 +447,7 @@ public class CraterGenerator {
 	}
 	
 	public static void distributeCraters(boolean[][] distributionMap, double[][] map, CraterConfig bowlCraterConfig, CraterConfig flattenedCraterConfig, CraterDistributionSettings settings, Random rng) {
+		CraterGenerator generator = new CraterGenerator(map.length, map[0].length);
 		CraterConfig finalCraterConfig =     new CraterConfig();
 		int maxTries = settings.craterCount;
 		int tries = 0;
@@ -451,7 +487,7 @@ public class CraterGenerator {
 			finalCraterConfig.setRingFunctMul(bowlCraterConfig.ringFunctMul * bMul + flattenedCraterConfig.ringFunctMul * fMul + biasedRNG(rng, settings.ringFunctRNGBias));
 			finalCraterConfig.setFullPeakSize(bowlCraterConfig.fullPeakSize + biasedRNG(rng, settings.fullPeakRNGBias));
 			finalCraterConfig.setRingThreshold(bowlCraterConfig.ringThreshold);
-			genCrater(map, lat - 90.0, lon - 180.0, finalCraterConfig, settings.mountainsNoise, rng);
+			generator.genCrater(map, lat - 90.0, lon - 180.0, finalCraterConfig, settings.mountainsNoise, rng);
 		}
 	}
 	
@@ -466,16 +502,17 @@ public class CraterGenerator {
 			mountainsNoise.initialize(rng);
 			long startTime = System.currentTimeMillis();
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 3.8, 0.17, 0.6, 0.0);
+			CraterGenerator generator = new CraterGenerator(testImg.length, testImg[0].length);
 			CraterConfig cc = new CraterConfig(5, 0.3, 0.2, 0.4, 1.0, 4.8, -10.0, 0.25, 4.2, 0.1, 0.4, 30, 75, 1.0);
-			genCrater(testImg, 0, 0, cc, nc, rng);
+			generator.genCrater(testImg, 0, 0, cc, nc, rng);
 			cc.setSize(15);
-			genCrater(testImg, 0, 2.5, cc, nc, rng);
+			generator.genCrater(testImg, 0, 2.5, cc, nc, rng);
 			cc.setSize(32);
-			genCrater(testImg, 0, 7.5, cc, nc, rng);
+			generator.genCrater(testImg, 0, 7.5, cc, nc, rng);
 			cc.setSize(35).setEjectaPerturbScale(1);
-			genCrater(testImg, 0, 17.5, cc, nc, rng);
+			generator.genCrater(testImg, 0, 17.5, cc, nc, rng);
 			cc.setSize(116).setEjectaStretch(8.4);
-			genCrater(testImg, 0, 37.5, cc, nc, rng);
+			generator.genCrater(testImg, 0, 37.5, cc, nc, rng);
 			//genBowlCrater(testImg, 0, 10, 500, 0.3, 0.25, 0.5, 0.48, 3.6, 4.8, rng);
 			//genFlattenedCrater(testImg, 25, 50, 500, 0.4, 0.25, 0.5, 0.48, 8, rng);
 			System.err.println(System.currentTimeMillis() - startTime);
