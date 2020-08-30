@@ -43,18 +43,18 @@ public class ComplexSurface {
 		
 		public double planetTemperature = 0;
 		
-		public NoiseConfig continentNoise            = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(12).setNoiseScale(0.85).setDistortStrength(0.25);
+		public NoiseConfig continentNoise            = new NoiseConfig(new OctaveNoise3D(12, 12, 12, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(12).setNoiseScale(0.85).setDistortStrength(0.25);
 		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.18).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig lakeNoiseMul              = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig lakeNoiseMul              = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
 		public NoiseConfig lakeNoise                 = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.3).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig desertNoise               = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig taigaNoise                = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 6, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.25).setDistortStrength(0.2).setNoiseOffset(0.25);
-		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.16).setDistortStrength(0.2).setNoiseOffset(0.25);
-		public NoiseConfig groundNoiseSmallDetail    = new NoiseConfig(new OctaveNoise3D(30, 30, 30, 6, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.06).setDistortStrength(0.2).setNoiseOffset(0.25);
-		public NoiseConfig hillNoise                 = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 9, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(0.35).setNoiseScale(0.16).setDistortStrength(0.5).setNoiseOffset(0.25);
+		public NoiseConfig desertNoise               = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig taigaNoise                = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 7, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.30).setDistortStrength(0.2).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.19).setDistortStrength(0.2).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseSmallDetail    = new NoiseConfig(new OctaveNoise3D(30, 30, 30, 8, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.07).setDistortStrength(0.2).setNoiseOffset(0.25);
+		public NoiseConfig hillNoise                 = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 9, 2.0, 0.55)).setIsRidged(true).setNoiseStrength(0.35).setNoiseScale(0.16).setDistortStrength(0.5).setNoiseOffset(0.25);
 		public NoiseConfig mountainsNoise            = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 11, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(3.8).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0); //TODO: Set to 16 octaves before use
-		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1).setNoiseScale(0.25).setDistortStrength(0.5).setNoiseOffset(0);
+		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6, 2.0, 0.72)).setIsRidged(true).setNoiseStrength(1).setNoiseScale(0.25).setDistortStrength(0.5).setNoiseOffset(0);
 		public NoiseConfig polesPerturbNoise         = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.5).setDistortStrength(0.35).setNoiseOffset(0);
 		public NoiseConfig mountainWorley            = new NoiseConfig(new WorleyNoise(64, 64, 64)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.015).setDistortStrength(0.01).setNoiseOffset(0);
 		
@@ -152,21 +152,16 @@ public class ComplexSurface {
 		double[] oceansColor =    RGB(new Color(7, 23, 51));*/
 		
 		double[][] continentMap  = new double[width][height];
-		double[][] distanceMap   = new double[width][height];
+		float [][] distanceMap   = new float [width][height];
 		double[][] mountainMap   = new double[width][height];
 		double[][] hillMap       = new double[width][height];
 		double[][] lakesMap      = new double[width][height];
-		double[][] desertMap     = new double[width][height];
-		double[][] taigaMap      = new double[width][height];
-		double[][] snowMap       = new double[width][height];
+		float [][] desertMap     = new float [width][height];
+		float [][] taigaMap      = new float [width][height];
+		float [][] snowMap       = new float [width][height];
 		double[][] finalNoiseMap = new double[width][height];
-		double[][] ground        = new double[width][height];
-		double[][] hills         = new double[width][height];
-		double[][] mountains     = new double[width][height];
-		double[][] lakes         = new double[width][height];
-		double[][] poles         = new double[width][height];
+		byte  [][] poles         = new byte  [width][height];
 		double[][][] colorMap    = new double[width][height][3];
-		double[][][] biomeMap    = new double[width][height][3];
 		
 		double[][] tempMap  = new double[width][height];
 		double[][] tempMap2 = new double[width][height];
@@ -175,11 +170,10 @@ public class ComplexSurface {
 		NoisemapGenerator.genNoisemap(continentMap, settings.continentNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				distanceMap[i][j] = continentMap[i][j] / 12.0;
+				distanceMap[i][j] = (float)(continentMap[i][j] / 12.0);
 				continentMap[i][j] = /*1.0 - */Math.max(0, Math.min(1, continentMap[i][j]));
 			}
 		}
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(distanceMap), "png", new File("distances.png"));
 		
 		NoisemapGenerator.genNoisemap(tempMap, settings.mountainNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
@@ -276,7 +270,7 @@ public class ComplexSurface {
 				if(val > 0.38) {
 					double h = val - 0.38;
 					h = h * 1.612 * 5.0;
-					desertMap[i][j] = h * continentMap[i][j] * (1.0 - Math.max(Math.min(lakesMap[i][j], 1.0), 0.0));
+					desertMap[i][j] = (float)(h * continentMap[i][j] * (1.0 - Math.max(Math.min(lakesMap[i][j], 1.0), 0.0)));
 				}
 				if(distance <= poleRadius * 1.7) {
 					mul = (poleRadius * 1.7) - (distance - (poleRadius * 1.0)) - (poleRadius * 1.0);
@@ -290,15 +284,15 @@ public class ComplexSurface {
 					if(val > 0.35) {
 						double h = val - 0.35;
 						h = h * 1.538 * 5.0;
-						taigaMap[i][j] = h * continentMap[i][j] * (1.0 - Math.max(Math.min(lakesMap[i][j], 1.0), 0.0)) * (1.0 - Math.max(Math.min(mountainMap[i][j], 1.0), 0.0)) * (1.0 - Math.max(Math.min(desertMap[i][j], 1.0), 0.0));
+						taigaMap[i][j] = (float)(h * continentMap[i][j] * (1.0 - Math.max(Math.min(lakesMap[i][j], 1.0), 0.0)) * (1.0 - Math.max(Math.min(mountainMap[i][j], 1.0), 0.0)) * (1.0 - Math.max(Math.min(desertMap[i][j], 1.0), 0.0)));
 					}
 					taigaMap[i][j] *= mul;
 				}
-				snowMap[i][j] = 0.0;
+				snowMap[i][j] = 0.0f;
 				if(distanceMap[i][j] > snowFadeEnd) {
-					snowMap[i][j] = 1.0;
+					snowMap[i][j] = 1.0f;
 				}else if(distanceMap[i][j] > snowFadeStart) {
-					snowMap[i][j] = (distanceMap[i][j] - snowFadeStart) / (snowFadeEnd - snowFadeStart);
+					snowMap[i][j] = (float)((distanceMap[i][j] - snowFadeStart) / (snowFadeEnd - snowFadeStart));
 				}
 				if(Math.abs(latitude) < snowLatitudeFadeEnd) {
 					if(Math.abs(latitude) < snowLatitudeFadeStart) snowMap[i][j] = 0;
@@ -375,36 +369,43 @@ public class ComplexSurface {
 		}
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(ground, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(finalNoiseMap, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
 		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
-		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseSmallDetail, continentMap, resMul, debugProgress);
-		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				if(continentMap[i][j] > 0) {
-					ground[i][j] = Math.abs(ground[i][j]) * 0.25;
+					finalNoiseMap[i][j] = Math.abs(finalNoiseMap[i][j]) * 0.15;
 				}
 			}
 		}
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(ground), "png", new File("ground.png"));
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("ground.png"));
 		
 		if(debugProgress) System.out.println("Hills");
-		NoisemapGenerator.genNoisemap(hills, settings.hillNoise, hillMap, resMul, debugProgress);
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(hills), "png", new File("hills.png"));
+		NoisemapGenerator.genNoisemap(tempMap, settings.hillNoise, hillMap, resMul, debugProgress);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				double mul = Math.min(1, mountainMap[i][j]);
+				finalNoiseMap[i][j] += tempMap[i][j] * (1.0 - mul);
+			}
+		}
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("hills.png"));
 		
 		if(debugProgress) System.out.println("Mountains");
-		NoisemapGenerator.genNoisemap(mountains, settings.mountainsNoise, mountainMap, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap, settings.mountainWorley, mountainMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(tempMap2, settings.mountainWorley, mountainMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				if(mountainMap[i][j] > 0) {
-					mountains[i][j] *= Math.max(0, Math.min(1, (1.0 - tempMap[i][j]) * 2.0 + 0.1));
+					tempMap[i][j] *= Math.max(0, Math.min(1, (1.0 - tempMap2[i][j]) * 2.0 + 0.1));
 				}
 			}
 		}
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(mountains), "png", new File("mountains.png"));
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("mountains.png"));
 		
 		if(debugProgress) {
 			System.out.println("Lakes");
@@ -415,13 +416,14 @@ public class ComplexSurface {
 			for(int j = 0; j < height; j++) {
 				if(lakesMap[i][j] > 0) {
 					double mul  = Math.max(0, Math.min(1, lakesMap[i][j]));
-					lakes[i][j] = 1.0 - Math.min(1, Math.max(0, mul));
+					tempMap[i][j] = 1.0 - Math.min(1, Math.max(0, mul));
 				}else {
-					lakes[i][j] = 1.0;
+					tempMap[i][j] = 1.0;
 				}
 			}
 		}
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(lakes), "png", new File("lakes.png"));
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] *= (tempMap[i][j] * continentMap[i][j]);
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("lakes.png"));
 		if(debugProgress) ProgressBars.finishProgress();
 		
 		if(debugProgress) {
@@ -439,30 +441,26 @@ public class ComplexSurface {
 					double distance = SphereUtils.distance(latitude, longitude, -90, 0);
 					distance += NoiseUtils.sampleSpherableNoise(i, 175, width, 360, settings.polesPerturbNoise) * Math.min(poleRadius, 0.275) / 1.333;
 					if(distance <= poleRadius) {
-						poles[i][j] = 0.01;
+						poles[i][j] = 1;
 					}else {
-						poles[i][j] = 0.0;
+						poles[i][j] = 0;
 					}
 					distance = SphereUtils.distance(latitude, longitude, 90, 0);
 					distance += NoiseUtils.sampleSpherableNoise(i, 185, width, 360, settings.polesPerturbNoise) * Math.min(poleRadius, 0.275) / 1.333;
 					if(distance <= poleRadius) {
-						poles[i][j] = 0.01001;
+						poles[i][j] = 2;
 					}
 				}
 			}
 		} finally {
 			settings.polesPerturbNoise.noiseScale = oldScale;
 		}
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(poles), "png", new File("poles.png"));
-		if(debugProgress) ProgressBars.finishProgress();
-		
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				double mul = Math.min(1, mountainMap[i][j]);
-				finalNoiseMap[i][j] = (ground[i][j] + (1.0 - mul) * hills[i][j] + mountains[i][j]) * (lakes[i][j] * continentMap[i][j]);
-				finalNoiseMap[i][j] = Math.max(finalNoiseMap[i][j], poles[i][j]);
-			}
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) {
+			tempMap[i][j] = poles[i][j] == 0 ? 0 : 0.01;
+			finalNoiseMap[i][j] = Math.max(finalNoiseMap[i][j], tempMap[i][j]);
 		}
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("poles.png"));
+		if(debugProgress) ProgressBars.finishProgress();
 		
 		int biggestPixelValue = 0;
 		for(int i = 0; i < width; i++) {
@@ -548,7 +546,7 @@ public class ComplexSurface {
 						factorIn(rgb, lakesMap[i][j], settings.oceansColor);
 					}
 					
-					factorIn(rgb, poles[i][j] * 0.75, settings.polesColor);
+					factorIn(rgb, (poles[i][j] == 0 ? 0 : 0.01) * 0.75, settings.polesColor);
 					if(poles[i][j] != 0) {
 						factorIn(rgb, 0.75, settings.polesColor);
 					}
@@ -588,58 +586,58 @@ public class ComplexSurface {
 		for(int i = 0; i < width; i++) {
 			if(debugProgress) ProgressBars.printProgress(i, width);
 			for(int j = 0; j < height; j++) {
-				if(poles[i][j] == 0.01) {
-					biomeMap[i][j] = settings.biomeColorNorthPole;
+				if(poles[i][j] == 1) {
+					colorMap[i][j] = settings.biomeColorNorthPole;
 					continue;
 				}
-				if(poles[i][j] == 0.01001) {
-					biomeMap[i][j] = settings.biomeColorSouthPole;
+				if(poles[i][j] == 2) {
+					colorMap[i][j] = settings.biomeColorSouthPole;
 					continue;
 				}
 				if(continentMap[i][j] <= 1e-8) {
-					biomeMap[i][j] = settings.biomeColorOceans;
+					colorMap[i][j] = settings.biomeColorOceans;
 					continue;
 				}
-				if(lakes[i][j] <= 0.5) {
-					biomeMap[i][j] = settings.biomeColorLakes;
+				if(lakesMap[i][j] > 0.1) {
+					colorMap[i][j] = settings.biomeColorLakes;
 					continue;
 				}
 				if(snowMap[i][j] > 0.5) {
-					biomeMap[i][j] = settings.biomeColorSnow;
+					colorMap[i][j] = settings.biomeColorSnow;
 					if(hillMap[i][j] > 0.25) {
-						biomeMap[i][j] = settings.biomeColorSnowyHills;
+						colorMap[i][j] = settings.biomeColorSnowyHills;
 					}
 					if(mountainMap[i][j] > 0.25) {
-						biomeMap[i][j] = settings.biomeColorPeaks;
+						colorMap[i][j] = settings.biomeColorPeaks;
 					}
 					continue;
 				}
-				biomeMap[i][j] = settings.biomeColorLowlands;
+				colorMap[i][j] = settings.biomeColorLowlands;
 				if(desertMap[i][j] > 0.25) {
-					biomeMap[i][j] = settings.biomeColorDesert;
+					colorMap[i][j] = settings.biomeColorDesert;
 				}
 				if(taigaMap[i][j] > 0.25) {
-					biomeMap[i][j] = settings.biomeColorTaiga;
+					colorMap[i][j] = settings.biomeColorTaiga;
 				}
 				if(hillMap[i][j] > 0.25) {
-					biomeMap[i][j] = settings.biomeColorHills;
+					colorMap[i][j] = settings.biomeColorHills;
 					if(desertMap[i][j] > 0.25) {
-						biomeMap[i][j] = settings.biomeColorDesertHills;
+						colorMap[i][j] = settings.biomeColorDesertHills;
 					}
 					if(taigaMap[i][j] > 0.25) {
-						biomeMap[i][j] = settings.biomeColorTaigaHills;
+						colorMap[i][j] = settings.biomeColorTaigaHills;
 					}
 				}
 				if(mountainMap[i][j] > 0.25) {
-					biomeMap[i][j] = settings.biomeColorMountains;
+					colorMap[i][j] = settings.biomeColorMountains;
 					if(desertMap[i][j] > 0.25) {
-						biomeMap[i][j] = settings.biomeColorDesertMountains;
+						colorMap[i][j] = settings.biomeColorDesertMountains;
 					}else if(finalNoiseMap[i][j] > (peaksFadeStart + (peaksFadeEnd - peaksFadeStart) / 2.0)) {
-						biomeMap[i][j] = settings.biomeColorPeaks;
+						colorMap[i][j] = settings.biomeColorPeaks;
 					}
 				}
 				if(distanceMap[i][j] <= settings.beachThreshold) {
-					biomeMap[i][j] = settings.biomeColorBeaches;
+					colorMap[i][j] = settings.biomeColorBeaches;
 				}
 			}
 		}
@@ -647,9 +645,9 @@ public class ComplexSurface {
 		
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				int r = (int)Math.max(0, Math.min(255, biomeMap[i][j][0] * 255.0));
-				int g = (int)Math.max(0, Math.min(255, biomeMap[i][j][1] * 255.0));
-				int b = (int)Math.max(0, Math.min(255, biomeMap[i][j][2] * 255.0));
+				int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
+				int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
+				int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
 				
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}

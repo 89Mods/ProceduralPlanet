@@ -89,12 +89,8 @@ public class GraymoonGen {
 		final int height = settings.height;
 		final double resMul = 200000.0 / (double)settings.planetRadius * 0.85;
 		
-		double[][] mariaMap      = new double[width][height];
 		double[][] marias        = new double[width][height];
-		double[][] mariaCraters  = new double[width][height];
 		double[][] mountainMap   = new double[width][height];
-		double[][] ground        = new double[width][height];
-		double[][] mountains     = new double[width][height];
 		double[][] finalNoiseMap = new double[width][height];
 		double[][][] colorMap    = new double[width][height][3];
 		double[][][] biomeMap    = new double[width][height][3];
@@ -103,7 +99,7 @@ public class GraymoonGen {
 		double[][] mariaNoiseMuls = new double[width][height];
 		
 		if(debugProgress) System.out.println("Marias");
-		NoisemapGenerator.genNoisemap(mariaMap, settings.mariaNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(marias, settings.mariaNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			double mul = 1;
@@ -125,17 +121,16 @@ public class GraymoonGen {
 					else if(mul2 <= settings.mariaLatitudeRange - settings.mariaFadeRange) mul2 = 1;
 				}
 				
-				mariaMap[i][j] = mariaMap[i][j] * mul * mul2;
-				mariaMap[i][j] *= mariaMap[i][j];
-				mariaMap[i][j] = Math.max(0, Math.min(1, mariaMap[i][j]));
+				marias[i][j] = marias[i][j] * mul * mul2;
+				marias[i][j] *= marias[i][j];
+				marias[i][j] = Math.max(0, Math.min(1, marias[i][j]));
 				
 			}
 		}
-		//MapUtils.displayMap("mariaMap.png", mariaMap);
 		
 		for(int i = 0; i < marias.length; i++) {
 			for(int j = 0; j < marias[0].length; j++) {
-				marias[i][j] = (1.0 - mariaMap[i][j]) * 0.4;
+				marias[i][j] = (1.0 - marias[i][j]) * 0.4;
 			}
 		}
 		
@@ -151,7 +146,7 @@ public class GraymoonGen {
 		}
 		
 		if(debugProgress) ProgressBars.printBar();
-		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) mariaCraters[i][j] = 0.4;
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) tempMap[i][j] = 0.4;
 		CraterConfig mariaShapeCraterConfig = new CraterConfig();
 		mariaShapeCraterConfig.setPerturbStrength(0.2).setPerturbScale(0.4).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
 		mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
@@ -167,7 +162,7 @@ public class GraymoonGen {
 			double val = marias[px][py];
 			if(val > 0.3 && val < 0.4) {
 				mariaShapeCraterConfig.setSize(200 + rng.nextInt(32)).setCraterStrength(0.5);
-				craterGen.genCrater(mariaCraters, lat, lon, mariaShapeCraterConfig, null, rng);
+				craterGen.genCrater(tempMap, lat, lon, mariaShapeCraterConfig, null, rng);
 			}else {
 				i--;
 				attemptCntr++;
@@ -177,8 +172,8 @@ public class GraymoonGen {
 		}
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				mariaCraters[i][j] = Math.max(0.23, mariaCraters[i][j]);
-				marias[i][j] = Math.min(marias[i][j], mariaCraters[i][j]);
+				tempMap[i][j] = Math.max(0.23, tempMap[i][j]);
+				marias[i][j] = Math.min(marias[i][j], tempMap[i][j]);
 			}
 		}
 		for(int i = 0; i < width; i++) {
@@ -244,45 +239,45 @@ public class GraymoonGen {
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
 		}
-		ImageIO.write(img, "png", new File("continents.png"));
+		if(debugSteps) ImageIO.write(img, "png", new File("continents.png"));
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(ground, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(finalNoiseMap, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
 		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, mariaNoiseMuls, resMul, debugProgress);
-		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) ground[i][j] += tempMap[i][j];
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		double inMariaMul = 0.15;
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double mariaMul = mariaNoiseMuls[i][j];
 				
 				if(mariaMul > 0) {
-					double val = ground[i][j];
+					double val = finalNoiseMap[i][j];
 					val = Math.abs(val);
 					val *= 0.4;
 					val *= mariaMul;
-					ground[i][j] = val;
+					finalNoiseMap[i][j] = val;
 				}
 				if(mariaMul < inMariaMul) {
 					mariaMul = inMariaMul - mariaMul;
-					double val = ground[i][j];
+					double val = finalNoiseMap[i][j];
 					val = Math.abs(val);
 					val *= 0.3;
 					val *= inMariaMul;
-					ground[i][j] = val;
+					finalNoiseMap[i][j] = val;
 				}
 			}
 		}
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(ground), "png", new File("ground.png"));
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("ground.png"));
 		
 		if(debugProgress) System.out.println("Mountains");
-		NoisemapGenerator.genNoisemap(mountains, settings.mountainsNoise, mountainMap, resMul, debugProgress);
-		if(debugSteps) ImageIO.write(MapUtils.renderMap(mountains), "png", new File("mountains.png"));
-		
+		NoisemapGenerator.genNoisemap(tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				finalNoiseMap[i][j] = ground[i][j] + mountains[i][j] + 0.3;
+				finalNoiseMap[i][j] += tempMap[i][j] + 0.3;
 			}
 		}
+		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("mountains.png"));
+		
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("complex.png"));
 		
 		if(debugProgress) {
