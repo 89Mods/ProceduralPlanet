@@ -136,12 +136,14 @@ public class AsteroidMoonGen {
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		NoisemapGenerator.genNoisemap(tempMap, settings.colorNoise, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j] * 7.0)) - 0.42;
-				if(shapeMap[i][j] < 0) shapeMap[i][j] = 0;
-				tempMap2[i][j] = Math.min(1, Math.max(0, tempMap2[i][j] * 1.25));
+		if(settings.secondaryColor != null) {
+			NoisemapGenerator.genNoisemap(tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
+			for(int i = 0; i < width; i++) {
+				for(int j = 0; j < height; j++) {
+					shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j] * 7.0)) - 0.42;
+					if(shapeMap[i][j] < 0) shapeMap[i][j] = 0;
+					tempMap2[i][j] = Math.min(1, Math.max(0, tempMap2[i][j] * 1.25));
+				}
 			}
 		}
 		for(int i = 0; i < width; i++) {
@@ -151,9 +153,11 @@ public class AsteroidMoonGen {
 					settings.normalColor[1] * (1.0 - shapeMap[i][j]) + shapeMap[i][j] * settings.peaksColor[1],
 					settings.normalColor[2] * (1.0 - shapeMap[i][j]) + shapeMap[i][j] * settings.peaksColor[2],
 				};
-				rgb[0] = rgb[0] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[0];
-				rgb[1] = rgb[1] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[1];
-				rgb[2] = rgb[2] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[2];
+				if(settings.secondaryColor != null) {
+					rgb[0] = rgb[0] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[0];
+					rgb[1] = rgb[1] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[1];
+					rgb[2] = rgb[2] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[2];
+				}
 				double mul = tempMap[i][j];
 				mul += 0.5;
 				if(mul > mul) mul = 1;
@@ -188,7 +192,7 @@ public class AsteroidMoonGen {
 		for(int i = 0; i < width; i++) {
 			if(debugProgress) ProgressBars.printProgress(i, width);
 			for(int j = 0; j < height; j++) {
-				if(settings.biomeColorSecondary != null && tempMap2[i][j] >= 0.75) {
+				if(settings.secondaryColor != null && settings.biomeColorSecondary != null && tempMap2[i][j] >= 0.75) {
 					colorMap[i][j] = settings.biomeColorSecondary;
 					continue;
 				}
