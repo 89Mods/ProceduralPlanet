@@ -83,6 +83,16 @@ public class RanMT extends Random {
     }
     
     public RanMT seedCompletely() {
+    	Random rng = new Random();
+    	int[] seed = new int[624];
+    	for(int i = 0; i < 624; i++) {
+    		seed[i] = rng.nextInt();
+    	}
+    	setSeed(seed);
+    	return this;
+    }
+    
+    public RanMT seedCompletely(long rSeed) {
     	/*try {
     		FileInputStream fis = new FileInputStream("/dev/random");
     		int[] seed = new int[624];
@@ -96,9 +106,10 @@ public class RanMT extends Random {
     	}catch(Exception e) {
     		e.printStackTrace();
     	}*/
+    	Random rng = new Random(rSeed);
     	int[] seed = new int[624];
     	for(int i = 0; i < 624; i++) {
-    		seed[i] = (int)(Math.random() * Integer.MAX_VALUE * 2.0 - Integer.MAX_VALUE);
+    		seed[i] = rng.nextInt();
     	}
     	setSeed(seed);
     	return this;

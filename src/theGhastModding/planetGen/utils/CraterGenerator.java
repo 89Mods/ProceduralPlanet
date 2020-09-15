@@ -274,7 +274,7 @@ public class CraterGenerator {
 				double ringFunctMul = 1.0;
 				ringFunctMul *= cc.ringFunctMul;
 				
-				double[] func = craterFunct(crater_funct_x + h, crater_funct_x + eh, eh, s, cc.p1, cc.p2, map[i][j], baseHeight, cc.craterStrength, cc.ejectaStrength, ejectaStretch, ringFunctMul, cc.floorHeight, peakNoise, latitude, longitude, cc.fullPeakSize, cc.ringThreshold, baseHeightCM, craterMap == null ? 0 : craterMap[i][j]);
+				double[] func = craterFunct(crater_funct_x, crater_funct_x + h, crater_funct_x + eh, eh, s, cc.p1, cc.p2, map[i][j], baseHeight, cc.craterStrength, cc.ejectaStrength, ejectaStretch, ringFunctMul, cc.floorHeight, peakNoise, latitude, longitude, cc.fullPeakSize, cc.ringThreshold, baseHeightCM, craterMap == null ? 0 : craterMap[i][j]);
 				
 				if(craterMap != null) craterMap[i][j] = func[1];
 				map[i][j] = func[0];
@@ -290,7 +290,7 @@ public class CraterGenerator {
 		return a * h + b * (1.0 - h) - k * h * (1.0 - h);
 	}
 	
-	public double[] craterFunct(double x, double ejectaX, double ejectaPerturb, double s, double p1, double p2, double terrainHeight, double baseHeight, double craterStrength, double ejectaStrength, double ejectaStretch, double ringFunctMul, double floorHeight, NoiseConfig peakNoise, double lat, double lon, double fullPeakSize, double ringThreshold, double baseHeightCM, double terrainHeightCM) {
+	public double[] craterFunct(double x1, double x2, double ejectaX, double ejectaPerturb, double s, double p1, double p2, double terrainHeight, double baseHeight, double craterStrength, double ejectaStrength, double ejectaStretch, double ringFunctMul, double floorHeight, NoiseConfig peakNoise, double lat, double lon, double fullPeakSize, double ringThreshold, double baseHeightCM, double terrainHeightCM) {
 		double rS = 1.0 / s;
 		
 		double peak = 0;
@@ -313,11 +313,11 @@ public class CraterGenerator {
 			}
 		}
 		
-		double absSX = Math.abs(s * x);
+		double absSX = Math.abs(s * x1);
 		double bowl = Math.pow(absSX, p1) - 1.0;
 		bowl = smoothMin(bowl, floorHeight, -0.15);
 			
-		double lip = Math.pow(p2, -absSX);
+		double lip = Math.pow(p2, -Math.abs(s * x2));
 		return new double[] {smoothMin((bowl + peak) * craterStrength + baseHeight, lip * craterStrength + terrainHeight, s < 4 ? 0 : 0.05), smoothMin(bowl + baseHeightCM, lip + terrainHeightCM, s < 4 ? 0 : 0.05)};
 	}
 	
@@ -473,7 +473,7 @@ public class CraterGenerator {
 				fMul = Math.min(1, (cSize - settings.flattenedStart) / (settings.flattenedEnd - settings.flattenedStart));
 				bMul = 1.0 - fMul;
 			}
-			floorHeight = fMul * flattenedCraterConfig.floorHeight + bMul * -1.0;
+			floorHeight = fMul * flattenedCraterConfig.floorHeight + bMul * bowlCraterConfig.floorHeight;
 			finalCraterConfig.setFloorHeight(floorHeight);
 			finalCraterConfig.setSize(cSize);
 			finalCraterConfig.setCraterStrength(size * (settings.maxStrength - settings.minStrength) + settings.minStrength + biasedRNG(rng, settings.craterStrengthRNGBias));
