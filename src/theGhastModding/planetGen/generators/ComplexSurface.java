@@ -33,6 +33,8 @@ public class ComplexSurface {
 		public double mountainsFadeEnd = 0.25;
 		public double hillsFadeStart = 0.11;
 		public double hillsFadeEnd = 0.35;
+		public double mountainColorFadeStart = 0.15;
+		public double mountainColorFadeEnd = 0.3;
 		public double basePeaksFadeStart = 0.45;
 		public double basePeaksFadeEnd = 0.55;
 		public double baseDesertFadeStart = 45;
@@ -527,15 +529,17 @@ public class ComplexSurface {
 						}
 						if(coldnessFactor != 0) factorIn(rgb, coldnessFactor, settings.taigaColor);
 						
+						double mountainFactor = (finalNoiseMap[i][j] - settings.mountainColorFadeStart) / (settings.mountainColorFadeEnd - settings.mountainColorFadeStart);
+						mountainFactor = Math.max(0, Math.min(1, mountainFactor));
 						if(finalNoiseMap[i][j] >= peaksFadeStart && desertMap[i][j] < 0.05) {
 							if(finalNoiseMap[i][j] >= peaksFadeEnd) {
 								factorIn(rgb, mountainMap[i][j], settings.peaksColor);
 							}else {
 								double mmul = (finalNoiseMap[i][j] - peaksFadeStart) / (peaksFadeEnd - peaksFadeStart);
-								factorIn(rgb, mountainMap[i][j] * (1.0 - mmul), settings.mountainsColor);
+								factorIn(rgb, mountainFactor * (1.0 - mmul), settings.mountainsColor);
 								factorIn(rgb, mountainMap[i][j] * mmul, settings.peaksColor);
 							}
-						}else factorIn(rgb, mountainMap[i][j], settings.mountainsColor);
+						}else factorIn(rgb, mountainFactor, settings.mountainsColor);
 						
 						factorIn(rgb, desertMap[i][j], settings.desertColor);
 						
