@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -37,35 +38,43 @@ public class GraymoonGen {
 		public double craterMaxsize = 128;
 		public double craterMinsize = 4;
 		public double craterMaxstrength = 0.6;
-		public double craterMinstrength = 0.05;
+		public double craterMinstrength = 0.1;
 		
 		public double mariaCraterMaxsize = 32;
 		public double mariaCraterMinsize = 4;
 		public double mariaCraterMaxstrength = 0.2;
-		public double mariaCraterMinstrength = 0.05;
+		public double mariaCraterMinstrength = 0.1;
 		
 		public int craterFlattenedStart = 14;
 		public int craterFlattenedEnd = 28;
 		public int craterRingThreshold = 96;
 		
 		public CraterConfig bowlCraterConfig      = new CraterConfig(0, 0, 0.2, 0.4, 1.0, 3.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, craterRingThreshold, 1.0);
-		public CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, craterRingThreshold, 0.9);
-		public CraterConfig mariaCraterConfig     = new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
+		public CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, craterRingThreshold, 0.9);
+		public CraterConfig mariaCraterConfig     = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
 		
 		public NoiseConfig mariaNoise                = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(3.0).setNoiseScale(2.0).setDistortStrength(0.25).setNoiseOffset(0.1);
 		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1.0).setNoiseScale(0.54).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 6, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.45).setNoiseScale(0.65).setDistortStrength(0.5).setNoiseOffset(0.25);
-		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 8, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.45).setNoiseScale(0.45).setDistortStrength(0.75).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 5, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.45).setNoiseScale(0.65).setDistortStrength(0.5).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 7, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.45).setNoiseScale(0.45).setDistortStrength(0.75).setNoiseOffset(0.25);
 		public NoiseConfig mountainsNoise            = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 12, 2.0, 0.65)).setIsRidged(true).setNoiseStrength(1.35).setNoiseScale(0.72).setDistortStrength(0.43).setNoiseOffset(0);
 		public NoiseConfig craterMountainsNoise      = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 9, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.5).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0);
-		public NoiseConfig secondaryNoise            = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 7, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.5).setDistortStrength(0.3).setNoiseOffset(0.25);
+		public NoiseConfig secondaryNoise            = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 6, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.5).setDistortStrength(0.3).setNoiseOffset(0.25);
 		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveWorley(32, 32, 32, 7, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.25).setNoiseScale(1.0).setDistortStrength(0.75).setNoiseOffset(0);
 		public NoiseConfig secondColorNoise          = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 2, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.0).setNoiseScale(1.15).setDistortStrength(0.25).setNoiseOffset(0.325);
+		public NoiseConfig craterRimColorNoise       = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(2.4).setNoiseScale(0.75).setDistortStrength(0.25).setNoiseOffset(0.275);
 		
 		public double[] normalColor      = MapUtils.RGB(new Color(85, 85, 85));
 		public double[] mountainsColor   = MapUtils.RGB(new Color(101, 101, 101));
 		public double[] mariasColor      = MapUtils.RGB(new Color(52, 52, 52));
 		public double[] secondaryColor   = MapUtils.RGB(new Color(32, 32, 32));
+		
+		public double[] craterRimFades          = new double[] {0.4, 0.4, 0.4};
+		public double[] mariaCraterRimFades     = new double[] {0.25, 0.25, 0.25};
+		public double   craterRimFadeStart      = 0.3;
+		public double   craterRimFadeEnd        = 0.5;
+		public double   mariaCraterRimFadeStart = 0.0;
+		public double   mariaCraterRimFadeEnd   = 0.15;
 		
 		public double[] normalBiomeColor    = MapUtils.RGB(new Color(150, 150, 150));
 		public double[] mountainsBiomeColor = MapUtils.RGB(new Color(180, 180, 180));
@@ -88,6 +97,7 @@ public class GraymoonGen {
 		settings.secondaryNoise.noise.initialize(rng);
 		settings.colorNoise.noise.initialize(rng);
 		settings.secondColorNoise.noise.initialize(rng);
+		settings.craterRimColorNoise.noise.initialize(rng);
 		
 		final int width = settings.width;
 		final int height = settings.height;
@@ -99,6 +109,9 @@ public class GraymoonGen {
 		double[][][] colorMap    = new double[width][height][3];
 		
 		double[][] tempMap        = new double[width][height];
+		double[][] tempMap2       = new double[width][height];
+		double[][] craterMap1     = new double[width][height];
+		double[][] craterMap2     = new double[width][height];
 		double[][] mariaNoiseMuls = new double[width][height];
 		
 		if(debugProgress) System.out.println("Marias");
@@ -165,7 +178,7 @@ public class GraymoonGen {
 			double val = marias[px][py];
 			if(val > 0.3 && val < 0.4) {
 				mariaShapeCraterConfig.setSize(200 + rng.nextInt(32)).setCraterStrength(0.5);
-				craterGen.genCrater(tempMap, lat, lon, mariaShapeCraterConfig, null, rng);
+				craterGen.genCrater(tempMap, null, lat, lon, mariaShapeCraterConfig, null, rng);
 			}else {
 				i--;
 				attemptCntr++;
@@ -300,19 +313,27 @@ public class GraymoonGen {
 				if(val < 0.35) mariaCnt++;
 			}
 		}
+		for(int i = 0; i < width; i++) {
+			Arrays.fill(craterMap1[i], 0.0);
+			Arrays.fill(craterMap2[i], 0.0);
+		}
 		double mariaRatio = (double)mariaCnt / (double)(1024 * 512);
 		int inMariaCraterCount = (int)(mariaRatio * settings.smallCraterCount);
 		double cS = settings.bowlCraterConfig.ringThreshold / settings.craterMaxsize * (settings.craterMaxstrength - settings.craterMinstrength) + settings.craterMinstrength;
 		CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
-		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
+		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
 		if(debugProgress) ProgressBars.printProgress(24, 75);
 		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
-		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
+		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
 		if(debugProgress) ProgressBars.printProgress(49, 75);
 		cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
-		CraterGenerator.distributeCraters(mariaCraterDistr, finalNoiseMap, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, rng);
+		CraterGenerator.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, rng);
 		if(debugProgress) ProgressBars.printProgress(74, 75);
 		if(debugProgress) ProgressBars.finishProgress();
+		if(debugSteps) {
+			ImageIO.write(MapUtils.renderMap(craterMap1), "png", new File("crater_map.png"));
+			ImageIO.write(MapUtils.renderMap(craterMap2), "png", new File("crater_map_2.png"));
+		}
 		
 		if(debugProgress) System.out.println("Secondary Noise");
 		NoisemapGenerator.genNoisemap(tempMap, settings.secondaryNoise, null, resMul, debugProgress);
@@ -363,6 +384,7 @@ public class GraymoonGen {
 			}
 		}
 		NoisemapGenerator.genNoisemap(tempMap, settings.colorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(tempMap2, settings.craterRimColorNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
@@ -385,10 +407,27 @@ public class GraymoonGen {
 				rgb[1] = mul * rgb[1];
 				rgb[2] = mul * rgb[2];
 				double heightCol = finalNoiseMap[i][j];
-				heightCol *= 0.1;
-				rgb[0] += heightCol;
-				rgb[1] += heightCol;
-				rgb[2] += heightCol;
+				heightCol = 1.0 + heightCol * 0.15;
+				rgb[0] *= heightCol;
+				rgb[1] *= heightCol;
+				rgb[2] *= heightCol;
+				
+				if(craterMap1[i][j] > settings.craterRimFadeStart && tempMap2[i][j] > 0) {
+					double mmul = (craterMap1[i][j] - settings.craterRimFadeStart) / (settings.craterRimFadeEnd - settings.craterRimFadeStart);
+					mmul = Math.min(1, mmul);
+					mmul *= tempMap2[i][j];
+					rgb[0] *= 1.0 + settings.craterRimFades[0] * mmul;
+					rgb[1] *= 1.0 + settings.craterRimFades[1] * mmul;
+					rgb[2] *= 1.0 + settings.craterRimFades[2] * mmul;
+				}
+				if(craterMap2[i][j] > settings.mariaCraterRimFadeStart && tempMap2[i][j] > 0) {
+					double mmul = (craterMap2[i][j] - settings.mariaCraterRimFadeStart) / (settings.mariaCraterRimFadeEnd - settings.mariaCraterRimFadeStart);
+					mmul = Math.min(1, mmul);
+					mmul *= tempMap2[i][j];
+					rgb[0] *= 1.0 + settings.mariaCraterRimFades[0] * mmul;
+					rgb[1] *= 1.0 + settings.mariaCraterRimFades[1] * mmul;
+					rgb[2] *= 1.0 + settings.mariaCraterRimFades[2] * mmul;
+				}
 				
 				colorMap[i][j] = rgb;
 			}

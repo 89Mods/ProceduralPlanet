@@ -149,7 +149,7 @@ public class CraterGenerator {
 	public CraterGenerator(int width, int height) {
 		this.noise3d = new PerlinNoise3D(8, 8, 8);
 		this.perturbNoiseConfig = new NoiseConfig(noise3d);
-		double stride = Math.sqrt((double)width * (double)width + (double)height * (double)height) * 2.0;
+		double stride = Math.sqrt((double)width * (double)width + (double)height * (double)height) * 8.0 * Math.PI;
 		int len = (int)stride;
 		stride = 1.0 / stride;
 		this.stride = stride;
@@ -171,9 +171,9 @@ public class CraterGenerator {
 		return (1.0 - d) * getSignCorrectedAcosAt(indx) + d * getSignCorrectedAcosAt(indx2);
 	}
 	
-	//strength *= 1.0 / size
-	public boolean genCrater(double[][] map, double lat, double lon, CraterConfig cc, NoiseConfig peakNoise, Random rng) {
+	public boolean genCrater(double[][] map, double[][] craterMap, double lat, double lon, CraterConfig cc, NoiseConfig peakNoise, Random rng) {
 		double baseHeight = map[(int)((lon + 180.0) / 360.0 * map.length)][(int)((lat + 90.0) / 180.0 * map[0].length)];
+		double baseHeightCM = craterMap == null ? 0 : craterMap[(int)((lon + 180.0) / 360.0 * map.length)][(int)((lat + 90.0) / 180.0 * map[0].length)];
 		double th = cc.craterStrength * 1.1;
 		if(cc.floorHeight >= 0) return false;
 		if(cc.floorHeight > -1) {
@@ -274,9 +274,10 @@ public class CraterGenerator {
 				double ringFunctMul = 1.0;
 				ringFunctMul *= cc.ringFunctMul;
 				
-				double func = craterFunct(crater_funct_x + h, crater_funct_x + eh, eh, s, cc.p1, cc.p2, map[i][j], baseHeight, cc.craterStrength, cc.ejectaStrength, ejectaStretch, ringFunctMul, cc.floorHeight, peakNoise, latitude, longitude, cc.fullPeakSize, cc.ringThreshold);
+				double[] func = craterFunct(crater_funct_x + h, crater_funct_x + eh, eh, s, cc.p1, cc.p2, map[i][j], baseHeight, cc.craterStrength, cc.ejectaStrength, ejectaStretch, ringFunctMul, cc.floorHeight, peakNoise, latitude, longitude, cc.fullPeakSize, cc.ringThreshold, baseHeightCM, craterMap == null ? 0 : craterMap[i][j]);
 				
-				map[i][j] = func;
+				if(craterMap != null) craterMap[i][j] = func[1];
+				map[i][j] = func[0];
 			}
 		}
 		return true;
@@ -284,11 +285,12 @@ public class CraterGenerator {
 	
 	// Thanks to www.iquilezles.org/www/articles/smin/smin.htm and https://www.youtube.com/watch?v=lctXaT9pxA0
 	public static double smoothMin(double a, double b, double k) {
+		if(k == 0) return Math.min(a, b);
 		double h = Math.max(0, Math.min(1, (b - a + k) / (2 * k)));
 		return a * h + b * (1.0 - h) - k * h * (1.0 - h);
 	}
 	
-	public double craterFunct(double x, double ejectaX, double ejectaPerturb, double s, double p1, double p2, double terrainHeight, double baseHeight, double craterStrength, double ejectaStrength, double ejectaStretch, double ringFunctMul, double floorHeight, NoiseConfig peakNoise, double lat, double lon, double fullPeakSize, double ringThreshold) {
+	public double[] craterFunct(double x, double ejectaX, double ejectaPerturb, double s, double p1, double p2, double terrainHeight, double baseHeight, double craterStrength, double ejectaStrength, double ejectaStretch, double ringFunctMul, double floorHeight, NoiseConfig peakNoise, double lat, double lon, double fullPeakSize, double ringThreshold, double baseHeightCM, double terrainHeightCM) {
 		double rS = 1.0 / s;
 		
 		double peak = 0;
@@ -312,12 +314,11 @@ public class CraterGenerator {
 		}
 		
 		double absSX = Math.abs(s * x);
-		double bowl = Math.pow(absSX * absSX, p1) - 1.0;
+		double bowl = Math.pow(absSX, p1) - 1.0;
 		bowl = smoothMin(bowl, floorHeight, -0.15);
-		bowl += peak;
-		
+			
 		double lip = Math.pow(p2, -absSX);
-		return smoothMin(bowl * craterStrength + baseHeight, lip * craterStrength + terrainHeight, 0.05);
+		return new double[] {smoothMin((bowl + peak) * craterStrength + baseHeight, lip * craterStrength + terrainHeight, s < 4 ? 0 : 0.05), smoothMin(bowl + baseHeightCM, lip + terrainHeightCM, s < 4 ? 0 : 0.05)};
 	}
 	
 	// Function taken from https://www.youtube.com/watch?v=lctXaT9pxA0
@@ -446,7 +447,7 @@ public class CraterGenerator {
 		return (rng.nextDouble() * 2.0 - 1.0) * bias;
 	}
 	
-	public static void distributeCraters(boolean[][] distributionMap, double[][] map, CraterConfig bowlCraterConfig, CraterConfig flattenedCraterConfig, CraterDistributionSettings settings, Random rng) {
+	public static void distributeCraters(boolean[][] distributionMap, double[][] map, double[][] craterMap, CraterConfig bowlCraterConfig, CraterConfig flattenedCraterConfig, CraterDistributionSettings settings, Random rng) {
 		CraterGenerator generator = new CraterGenerator(map.length, map[0].length);
 		CraterConfig finalCraterConfig =     new CraterConfig();
 		int maxTries = settings.craterCount;
@@ -487,7 +488,7 @@ public class CraterGenerator {
 			finalCraterConfig.setRingFunctMul(bowlCraterConfig.ringFunctMul * bMul + flattenedCraterConfig.ringFunctMul * fMul + biasedRNG(rng, settings.ringFunctRNGBias));
 			finalCraterConfig.setFullPeakSize(bowlCraterConfig.fullPeakSize + biasedRNG(rng, settings.fullPeakRNGBias));
 			finalCraterConfig.setRingThreshold(bowlCraterConfig.ringThreshold);
-			generator.genCrater(map, lat - 90.0, lon - 180.0, finalCraterConfig, settings.mountainsNoise, rng);
+			generator.genCrater(map, craterMap, lat - 90.0, lon - 180.0, finalCraterConfig, settings.mountainsNoise, rng);
 		}
 	}
 	
@@ -504,15 +505,15 @@ public class CraterGenerator {
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 3.8, 0.17, 0.6, 0.0);
 			CraterGenerator generator = new CraterGenerator(testImg.length, testImg[0].length);
 			CraterConfig cc = new CraterConfig(5, 0.3, 0.2, 0.4, 1.0, 4.8, -10.0, 0.25, 4.2, 0.1, 0.4, 30, 75, 1.0);
-			generator.genCrater(testImg, 0, 0, cc, nc, rng);
+			generator.genCrater(testImg, null, 0, 0, cc, nc, rng);
 			cc.setSize(15);
-			generator.genCrater(testImg, 0, 2.5, cc, nc, rng);
+			generator.genCrater(testImg, null, 0, 2.5, cc, nc, rng);
 			cc.setSize(32);
-			generator.genCrater(testImg, 0, 7.5, cc, nc, rng);
+			generator.genCrater(testImg, null, 0, 7.5, cc, nc, rng);
 			cc.setSize(35).setEjectaPerturbScale(1);
-			generator.genCrater(testImg, 0, 17.5, cc, nc, rng);
+			generator.genCrater(testImg, null, 0, 17.5, cc, nc, rng);
 			cc.setSize(116).setEjectaStretch(8.4);
-			generator.genCrater(testImg, 0, 37.5, cc, nc, rng);
+			generator.genCrater(testImg, null, 0, 37.5, cc, nc, rng);
 			//genBowlCrater(testImg, 0, 10, 500, 0.3, 0.25, 0.5, 0.48, 3.6, 4.8, rng);
 			//genFlattenedCrater(testImg, 25, 50, 500, 0.4, 0.25, 0.5, 0.48, 8, rng);
 			System.err.println(System.currentTimeMillis() - startTime);

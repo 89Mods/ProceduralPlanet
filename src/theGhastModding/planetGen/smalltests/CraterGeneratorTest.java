@@ -19,6 +19,7 @@ public class CraterGeneratorTest {
 	public static void main(String[] args) {
 		try {
 			double[][] testImg = new double[2048][1024];
+			double[][] testCraterMap = new double[2048][1024];
 			for(int i = 0; i < testImg.length; i++) Arrays.fill(testImg[i], 0.8);
 			BufferedImage testRes = new BufferedImage(testImg.length, testImg[0].length, BufferedImage.TYPE_INT_RGB);
 			
@@ -38,7 +39,7 @@ public class CraterGeneratorTest {
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 1.5, 0.17, 0.6, 0.0);
 			CraterDistributionSettings cds = new CraterDistributionSettings(craterCnt, minsize, maxsize, minStrength, maxStrength, flattenedStart, flattenedEnd, nc, 0.8);
 			startTime = System.currentTimeMillis();
-			CraterGenerator.distributeCraters(null, testImg, bowlCraterConfig, flattenedCraterConfig, cds, rng);
+			CraterGenerator.distributeCraters(null, testImg, testCraterMap, bowlCraterConfig, flattenedCraterConfig, cds, rng);
 			System.out.println("Took " + ((System.currentTimeMillis() - startTime) / 1000) + "s to generate " + craterCnt + " craters.");
 			
 			for(int i = 0; i < testImg.length; i++) {
@@ -49,6 +50,14 @@ public class CraterGeneratorTest {
 				}
 			}
 			ImageIO.write(testRes, "png", new File("craters.png"));
+			for(int i = 0; i < testCraterMap.length; i++) {
+				for(int j = 0; j < testCraterMap[0].length; j++) {
+					int col = (int)(testCraterMap[i][j] * 255.0);
+					col = Math.max(0, Math.min(255, col));
+					testRes.setRGB(i, j, col | (col << 8) | (col << 16));
+				}
+			}
+			ImageIO.write(testRes, "png", new File("crater_map.png"));
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();
