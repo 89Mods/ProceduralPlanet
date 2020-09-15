@@ -36,7 +36,7 @@ public class CraterGeneratorTest {
 			CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.1, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, 96, 0.9);
 			OctaveNoise3D mountainsNoise =       new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.5);
 			mountainsNoise.initialize(rng);
-			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 1.5, 0.17, 0.6, 0.0);
+			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 1.5, 0.17, 0.6, 0.0, 0.0);
 			CraterDistributionSettings cds = new CraterDistributionSettings(craterCnt, minsize, maxsize, minStrength, maxStrength, flattenedStart, flattenedEnd, nc, 0.8);
 			startTime = System.currentTimeMillis();
 			CraterGenerator.distributeCraters(null, testImg, testCraterMap, bowlCraterConfig, flattenedCraterConfig, cds, rng);

@@ -24,7 +24,7 @@ public class NewGasGiantBase {
 			
 			OctaveNoise3D noise = new OctaveNoise3D(20, 20, 20, 12, 2.0, 0.6);
 			noise.initialize(new RanMT());
-			NoiseConfig nc = new NoiseConfig(noise, false, 1.5, 1.0, 0.5, 0.125);
+			NoiseConfig nc = new NoiseConfig(noise, false, 1.5, 1.0, 0.5, 0.125, 0.0);
 			BufferedImage img = new BufferedImage(1920, 1920/2, BufferedImage.TYPE_INT_RGB);
 			int bands = 4;
 			for(int i = 0; i < img.getHeight(); i++) {

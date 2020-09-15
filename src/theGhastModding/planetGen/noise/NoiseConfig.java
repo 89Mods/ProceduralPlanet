@@ -8,16 +8,17 @@ public class NoiseConfig {
 	public double noiseScale;
 	public double distortStrength;
 	public double noiseOffset;
+	public double zOffset;
 	
 	public NoiseConfig() {
-		this(null, false, 1.0, 1.0, 0.0, 0.0);
+		this(null, false, 1.0, 1.0, 0.0, 0.0, 0.0);
 	}
 	
 	public NoiseConfig(NoiseFunction noise) {
-		this(noise, false, 1.0, 1.0, 0.0, 0.0);
+		this(noise, false, 1.0, 1.0, 0.0, 0.0, 0.0);
 	}
 	
-	public NoiseConfig(NoiseFunction noise, boolean ridged, double noiseStrength, double noiseScale, double distortStrength, double noiseOffset) {
+	public NoiseConfig(NoiseFunction noise, boolean ridged, double noiseStrength, double noiseScale, double distortStrength, double noiseOffset, double zOffset) {
 		super();
 		this.noise = noise;
 		this.ridged = ridged;
@@ -25,6 +26,7 @@ public class NoiseConfig {
 		this.noiseScale = noiseScale;
 		this.distortStrength = distortStrength;
 		this.noiseOffset = noiseOffset;
+		this.zOffset = zOffset;
 	}
 	
 	public NoiseConfig setNoiseFunction(NoiseFunction noise) {
@@ -54,6 +56,11 @@ public class NoiseConfig {
 	
 	public NoiseConfig setNoiseOffset(double noiseOffset) {
 		this.noiseOffset = noiseOffset;
+		return this;
+	}
+	
+	public NoiseConfig setZOffset(double zOffset) {
+		this.zOffset = zOffset;
 		return this;
 	}
 	

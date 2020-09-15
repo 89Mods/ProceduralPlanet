@@ -502,7 +502,7 @@ public class CraterGenerator {
 			OctaveNoise3D mountainsNoise =          new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.5);
 			mountainsNoise.initialize(rng);
 			long startTime = System.currentTimeMillis();
-			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 3.8, 0.17, 0.6, 0.0);
+			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 3.8, 0.17, 0.6, 0.0, 0.0);
 			CraterGenerator generator = new CraterGenerator(testImg.length, testImg[0].length);
 			CraterConfig cc = new CraterConfig(5, 0.3, 0.2, 0.4, 1.0, 4.8, -10.0, 0.25, 4.2, 0.1, 0.4, 30, 75, 1.0);
 			generator.genCrater(testImg, null, 0, 0, cc, nc, rng);
@@ -546,7 +546,7 @@ public class CraterGenerator {
 			int prevy = Integer.MAX_VALUE;
 			g = (Graphics2D)testRes.getGraphics();
 			g.setColor(Color.WHITE);
-			nc = new NoiseConfig(noise2d, false, 1.0, 1.0 / 12.0, 0.25, 0.5);
+			nc = new NoiseConfig(noise2d, false, 1.0, 1.0 / 12.0, 0.25, 0.5, 0.0);
 			for(int i = 0; i < testRes.getWidth(); i++) {
 				double h = NoiseUtils.sampleSpherableNoise(i, 450, 900, 900, nc);
 				if(h < 0) continue;
