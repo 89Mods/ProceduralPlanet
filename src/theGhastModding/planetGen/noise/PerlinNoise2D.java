@@ -8,11 +8,11 @@ public class PerlinNoise2D extends NoiseFunction {
 	
 	public PerlinNoise2D(int width, int height) {
 		super(width, height, 1);
-		this.noiseMap = new double[width + 1][height + 1][2];
 	}
 	
 	@Override
 	public void initialize(Random rng) {
+		if(this.noiseMap == null) this.noiseMap = new double[width + 1][height + 1][2];
 		for(int i = 0; i < width + 1; i++) {
 			for(int j = 0; j < height + 1; j++) {
 				double d1 = rng.nextDouble() * 2.0 - 1.0;
@@ -22,6 +22,12 @@ public class PerlinNoise2D extends NoiseFunction {
 				noiseMap[i][j][1] = d2 / length;
 			}
 		}
+	}
+	
+	@Override
+	public void cleanUp() {
+		this.noiseMap = null;
+		System.gc();
 	}
 	
 	private static double lerp(double a0, double a1, double w) {

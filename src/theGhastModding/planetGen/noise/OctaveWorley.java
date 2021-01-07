@@ -22,6 +22,11 @@ public class OctaveWorley extends NoiseFunction {
 		this.noise.initialize(rng);
 	}
 	
+	@Override
+	public void cleanUp() {
+		this.noise.cleanUp();
+	}
+	
 	public double sample(double x, double y, double z) {
 		double finalRes = 0;
 		double max = 0;
@@ -36,6 +41,18 @@ public class OctaveWorley extends NoiseFunction {
 		}
 		
 		return finalRes / max;
+	}
+	
+	public double getLacunarity() {
+		return this.lacunarity;
+	}
+	
+	public double getPersistence() {
+		return this.persistence;
+	}
+	
+	public int getOctaves() {
+		return this.octaves;
 	}
 	
 }

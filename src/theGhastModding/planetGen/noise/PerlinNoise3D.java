@@ -8,11 +8,11 @@ public class PerlinNoise3D extends NoiseFunction {
 	
 	public PerlinNoise3D(int width, int height, int depth) {
 		super(width, height, depth);
-		this.noiseMap = new double[width + 1][height + 1][depth + 1][3];
 	}
 	
 	@Override
 	public void initialize(Random rng) {
+		if(this.noiseMap == null)  this.noiseMap = new double[width + 1][height + 1][depth + 1][3];
 		for(int i = 0; i < width + 1; i++) {
 			for(int j = 0; j < height + 1; j++) {
 				for(int k = 0; k < depth + 1; k++) {
@@ -29,6 +29,12 @@ public class PerlinNoise3D extends NoiseFunction {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void cleanUp() {
+		this.noiseMap = null;
+		System.gc();
 	}
 	
 	private static double lerp(double a0, double a1, double w) {

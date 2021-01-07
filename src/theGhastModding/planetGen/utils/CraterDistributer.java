@@ -16,7 +16,7 @@ public class CraterDistributer {
 	private static final ThreadPoolExecutor threadPool;
 	
 	static {
-		maxThreads = Runtime.getRuntime().availableProcessors();
+		maxThreads = Math.min(GlobalConfiguration.MAX_THREADS, Runtime.getRuntime().availableProcessors());
 		distributionRunners = new DistributionRunner[maxThreads];
 		for(int i = 0; i < maxThreads; i++) distributionRunners[i] = new DistributionRunner(i, maxThreads);
 		threadPool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
@@ -264,6 +264,7 @@ public class CraterDistributer {
 		}
 		double oldLatScale = 0,oldLonScale = 0;
 		if(settings.mountainsNoise != null) {
+			settings.mountainsNoise.noise.initialize(rng);
 			oldLatScale = settings.mountainsNoise.noiseLatitudeScale;
 			oldLonScale = settings.mountainsNoise.noiseLongitudeScale;
 			settings.mountainsNoise.noiseLatitudeScale *= planetSizeScale;
@@ -289,6 +290,7 @@ public class CraterDistributer {
 			if(settings.mountainsNoise != null) {
 				settings.mountainsNoise.noiseLatitudeScale = oldLatScale;
 				settings.mountainsNoise.noiseLongitudeScale = oldLonScale;
+				settings.mountainsNoise.noise.cleanUp();
 			}
 		}
 	}

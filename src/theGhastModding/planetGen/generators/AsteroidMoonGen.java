@@ -33,7 +33,7 @@ public class AsteroidMoonGen {
 		public NoiseConfig peakNoise        = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.125).setNoiseScale(0.64).setDistortStrength(0.5).setNoiseOffset(0.325);
 		public NoiseConfig secondaryNoise   = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 5, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.1).setNoiseScale(0.5).setDistortStrength(0.4).setNoiseOffset(0.325);
 		public NoiseConfig secondColorNoise = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 2, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.0).setNoiseScale(1.15).setDistortStrength(0.25).setNoiseOffset(0.325);
-		public NoiseConfig colorNoise       = new NoiseConfig(new OctaveWorley(32, 32, 32, 6, 2.0, 0.64)).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1.0).setDistortStrength(0.75).setNoiseOffset(0);
+		public NoiseConfig colorNoise       = new NoiseConfig(new OctaveWorley(16, 16, 16, 6, 2.0, 0.64)).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1.0).setDistortStrength(0.75).setNoiseOffset(0);
 		
 		public CraterConfig craterConfig    = CraterConfig.genBowlOnlyConfig(0, 0, 0.1, 0.5, 1.0, 4.8).setFloorHeight(-0.95);
 		public int craterCount              = 512;
@@ -91,13 +91,6 @@ public class AsteroidMoonGen {
 	public static GeneratorResult generate(Random rng, AsteroidGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
 		GeneratorResult result = new GeneratorResult();
 		
-		settings.shapeNoise.noise.initialize(rng);
-		settings.groundNoise.noise.initialize(rng);
-		settings.peakNoise.noise.initialize(rng);
-		settings.secondColorNoise.noise.initialize(rng);
-		settings.colorNoise.noise.initialize(rng);
-		settings.secondaryNoise.noise.initialize(rng);
-		
 		// Copy commonly-used config items into local variables to make the code more readable
 		final int width     = settings.width;
 		final int height    = settings.height;
@@ -107,10 +100,9 @@ public class AsteroidMoonGen {
 		double[][] tempMap       = new double[width][height];
 		double[][] tempMap2      = new double[width][height];
 		double[][] finalNoiseMap = new double[width][height];
-		double[][][] colorMap    = new double[width][height][3];
 		
 		if(debugProgress) System.out.println("Shape");
-		NoisemapGenerator.genNoisemap(shapeMap, settings.shapeNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, shapeMap, settings.shapeNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j]));
@@ -119,7 +111,7 @@ public class AsteroidMoonGen {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(shapeMap), "png", new File("shape.png"));
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.groundNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] = shapeMap[i][j] + tempMap[i][j];
@@ -128,7 +120,7 @@ public class AsteroidMoonGen {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("ground.png"));
 		
 		if(debugProgress) System.out.println("Peaks");
-		NoisemapGenerator.genNoisemap(tempMap, settings.peakNoise, shapeMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.peakNoise, shapeMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] += tempMap[i][j];
@@ -141,7 +133,7 @@ public class AsteroidMoonGen {
 		CraterDistributer.distributeCraters(null, finalNoiseMap, null, settings.craterConfig, settings.craterConfig, cds, resMul, rng, true);
 		
 		if(debugProgress) System.out.println("Secondary noise");
-		NoisemapGenerator.genNoisemap(tempMap, settings.secondaryNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.secondaryNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] += tempMap[i][j];
@@ -178,9 +170,9 @@ public class AsteroidMoonGen {
 		
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		NoisemapGenerator.genNoisemap(tempMap, settings.colorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.colorNoise, null, resMul, debugProgress);
 		if(settings.secondaryColor != null) {
-			NoisemapGenerator.genNoisemap(tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
+			NoisemapGenerator.genNoisemap(rng, tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j] * 7.0)) - 0.42;
@@ -213,14 +205,9 @@ public class AsteroidMoonGen {
 				rgb[1] += heightCol;
 				rgb[2] += heightCol;
 				
-				colorMap[i][j] = rgb;
-			}
-		}
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
-				int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
-				int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
+				int r = (int)Math.max(0, Math.min(255, rgb[0] * 255.0));
+				int g = (int)Math.max(0, Math.min(255, rgb[1] * 255.0));
+				int b = (int)Math.max(0, Math.min(255, rgb[2] * 255.0));
 				
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
@@ -232,33 +219,31 @@ public class AsteroidMoonGen {
 		if(debugProgress) System.out.println("Biome map");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		if(debugProgress) ProgressBars.printBar();
+		final double[] base = new double[] {0,0,0};
 		for(int i = 0; i < width; i++) {
 			if(debugProgress) ProgressBars.printProgress(i, width);
 			for(int j = 0; j < height; j++) {
+				double[] rgb = base;
 				if(settings.secondaryColor != null && settings.biomeColorSecondary != null && tempMap2[i][j] >= 0.75) {
-					colorMap[i][j] = settings.biomeColorSecondary;
-					continue;
-				}
-				if(shapeMap[i][j] <= 0.25) {
-					colorMap[i][j] = settings.biomeColorNormal;
+					rgb = settings.biomeColorSecondary;
 				}else {
-					colorMap[i][j] = settings.biomeColorPeaks;
+					if(shapeMap[i][j] <= 0.25) {
+						rgb = settings.biomeColorNormal;
+					}else {
+						rgb = settings.biomeColorPeaks;
+					}
 				}
-			}
-		}
-		if(debugProgress) ProgressBars.finishProgress();
-		
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
-				int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
-				int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
+				int r = (int)Math.max(0, Math.min(255, rgb[0] * 255.0));
+				int g = (int)Math.max(0, Math.min(255, rgb[1] * 255.0));
+				int b = (int)Math.max(0, Math.min(255, rgb[2] * 255.0));
 				
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
 		}
+		if(debugProgress) ProgressBars.finishProgress();
 		result.biomeMap = img;
 		if(debugSteps) ImageIO.write(img, "png", new File("biomes.png"));
+		
 		if(debugProgress) System.out.println("Done.");
 		return result;
 	}

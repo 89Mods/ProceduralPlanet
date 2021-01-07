@@ -1,5 +1,6 @@
 package theGhastModding.planetGen.utils;
 
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -12,7 +13,7 @@ public class NoisemapGenerator {
 	private static final ThreadPoolExecutor threadPool;
 	
 	static {
-		maxThreads = Runtime.getRuntime().availableProcessors();
+		maxThreads = Math.min(GlobalConfiguration.MAX_THREADS, Runtime.getRuntime().availableProcessors());
 		noisemapRunners = new NoisemapRunner[maxThreads];
 		for(int i = 0; i < maxThreads; i++) noisemapRunners[i] = new NoisemapRunner(i, maxThreads);
 		threadPool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
@@ -21,7 +22,7 @@ public class NoisemapGenerator {
 	//Cache synchronization issues be like...
 	private static volatile double[][] mapBuffer = null;
 	
-	public synchronized static void genNoisemap(double[][] mapOutput, NoiseConfig noiseConfig, double[][] noiseMul, double planetSizeScale, boolean debugProgress) {
+	public synchronized static void genNoisemap(Random rng, double[][] mapOutput, NoiseConfig noiseConfig, double[][] noiseMul, double planetSizeScale, boolean debugProgress) {
 		if(mapBuffer == null || mapBuffer.length < mapOutput.length || mapBuffer[0].length < mapOutput[0].length) {
 			mapBuffer = new double[mapOutput.length][mapOutput[0].length];
 		}
@@ -30,6 +31,7 @@ public class NoisemapGenerator {
 		noiseConfig.noiseLatitudeScale *= planetSizeScale;
 		noiseConfig.noiseLongitudeScale *= planetSizeScale;
 		try {
+			noiseConfig.noise.initialize(rng);
 			for(int i = 0; i < maxThreads; i++) {
 				noisemapRunners[i].prepare(mapBuffer, mapOutput.length, mapOutput[0].length, noiseConfig, noiseMul, debugProgress && i == 0);
 				threadPool.submit(noisemapRunners[i]);
@@ -43,6 +45,7 @@ public class NoisemapGenerator {
 		} finally {
 			noiseConfig.noiseLatitudeScale = oldLatScale;
 			noiseConfig.noiseLongitudeScale = oldLonScale;
+			noiseConfig.noise.cleanUp();
 		}
 	}
 	

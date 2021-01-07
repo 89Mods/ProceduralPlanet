@@ -22,6 +22,11 @@ public class OctaveNoise2D extends NoiseFunction {
 		this.noise.initialize(rng);
 	}
 	
+	@Override
+	public void cleanUp() {
+		this.noise.cleanUp();
+	}
+	
 	public double sample(double x, double y, double z) {
 		if(x < 0) x = (double)Integer.MAX_VALUE + x;
 		if(y < 0) y = (double)Integer.MAX_VALUE + y;
@@ -38,6 +43,18 @@ public class OctaveNoise2D extends NoiseFunction {
 		}
 		
 		return finalRes / max;
+	}
+	
+	public double getLacunarity() {
+		return this.lacunarity;
+	}
+	
+	public double getPersistence() {
+		return this.persistence;
+	}
+	
+	public int getOctaves() {
+		return this.octaves;
 	}
 	
 }

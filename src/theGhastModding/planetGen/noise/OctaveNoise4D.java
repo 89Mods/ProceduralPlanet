@@ -37,4 +37,16 @@ public class OctaveNoise4D extends NoiseFunction4D {
 		return finalRes / max;
 	}
 	
+	public double getLacunarity() {
+		return this.lacunarity;
+	}
+	
+	public double getPersistence() {
+		return this.persistence;
+	}
+	
+	public int getOctaves() {
+		return this.octaves;
+	}
+	
 }

@@ -27,7 +27,7 @@ public class ComplexSurface {
 		public int height = 2048;
 		public int planetRadius = 600000;
 		
-		public double baseOceanFactor = 0;
+		public double baseOceanFactor = -0.1;
 		public double basePoleRadius = 0.106;
 		public double beachThreshold = 0.015 / 12.0;
 		public double mountainsFadeStart = 0.1;
@@ -46,20 +46,20 @@ public class ComplexSurface {
 		
 		public double planetTemperature = 0;
 		
-		public NoiseConfig continentNoise            = new NoiseConfig(new OctaveNoise3D(12, 12, 12, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(12).setNoiseScale(0.85).setDistortStrength(0.25);
-		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.18).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig lakeNoiseMul              = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig lakeNoise                 = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.3).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig desertNoise               = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig taigaNoise                = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 7, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.30).setDistortStrength(0.2).setNoiseOffset(0.25);
-		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.19).setDistortStrength(0.2).setNoiseOffset(0.25);
-		public NoiseConfig groundNoiseSmallDetail    = new NoiseConfig(new OctaveNoise3D(30, 30, 30, 8, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.333).setNoiseScale(0.07).setDistortStrength(0.2).setNoiseOffset(0.25);
-		public NoiseConfig hillNoise                 = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 9, 2.0, 0.55)).setIsRidged(true).setNoiseStrength(0.35).setNoiseScale(0.16).setDistortStrength(0.5).setNoiseOffset(0.25);
-		public NoiseConfig mountainsNoise            = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 11, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(3.8).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0); //TODO: Set to 16 octaves before use
-		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6, 2.0, 0.72)).setIsRidged(true).setNoiseStrength(1).setNoiseScale(0.25).setDistortStrength(0.5).setNoiseOffset(0);
-		public NoiseConfig polesPerturbNoise         = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.5).setDistortStrength(0.35).setNoiseOffset(0);
-		public NoiseConfig mountainWorley            = new NoiseConfig(new WorleyNoise(64, 64, 64)).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.015).setDistortStrength(0.01).setNoiseOffset(0);
+		public NoiseConfig continentNoise            = new NoiseConfig(new OctaveNoise3D(12, 12, 12, 6 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(12).setNoiseScale(1.25).setDistortStrength(0.25);
+		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 6 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.18).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig lakeNoiseMul              = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  5 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig lakeNoise                 = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.3).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig desertNoise               = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  5 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig taigaNoise                = new NoiseConfig(new OctaveNoise3D(8,  8,  8,  5 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(1.0).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 8 , 2.0, 0.7 )).setIsRidged(false).setNoiseStrength(0.75).setNoiseScale(0.5).setDistortStrength(0.2).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6 , 2.0, 0.64)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.14).setDistortStrength(0.2).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseSmallDetail    = new NoiseConfig(new OctaveNoise3D(30, 30, 30, 6 , 2.0, 0.64)).setIsRidged(false).setNoiseStrength(0.075).setNoiseScale(0.085).setDistortStrength(0.2).setNoiseOffset(0.25);
+		public NoiseConfig hillNoise                 = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 9 , 2.0, 0.55)).setIsRidged(true ).setNoiseStrength(0.35).setNoiseScale(0.16).setDistortStrength(0.5).setNoiseOffset(0.25);
+		public NoiseConfig mountainsNoise            = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 11, 2.0, 0.5 )).setIsRidged(true ).setNoiseStrength(2.9).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0); //TODO: Set to 16 octaves before use
+		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveNoise3D(20, 20, 20, 6 , 2.0, 0.72)).setIsRidged(true ).setNoiseStrength(1).setNoiseScale(0.25).setDistortStrength(0.5).setNoiseOffset(0);
+		public NoiseConfig polesPerturbNoise         = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3 , 2.0, 0.6 )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.5).setDistortStrength(0.35).setNoiseOffset(0);
+		public NoiseConfig mountainWorley            = new NoiseConfig(new WorleyNoise(  64, 64, 64               )).setIsRidged(false).setNoiseStrength(1).setNoiseScale(0.015).setDistortStrength(0.01).setNoiseOffset(0);
 		
 		public double[] biomeColorOceans          = MapUtils.RGB(new Color(55, 98, 171));
 		public double[] biomeColorLowlands        = MapUtils.RGB(new Color(131, 188, 46));
@@ -131,21 +131,7 @@ public class ComplexSurface {
 		
 		File pastOutputsFolder = new File("past_outputs");
 		if(!pastOutputsFolder.exists()) pastOutputsFolder.mkdirs();
-		settings.continentNoise.setNoiseOffset(oceanFactor / 2.0); //TODO: Find a way to do this without permanently modifying this NoiseConfig
-		settings.continentNoise.noise.initialize(rng);
-		settings.mountainNoise.noise.initialize(rng);
-		settings.lakeNoiseMul.noise.initialize(rng);
-		settings.lakeNoise.noise.initialize(rng);
-		settings.desertNoise.noise.initialize(rng);
-		settings.taigaNoise.noise.initialize(rng);
-		settings.groundNoiseLargeDetail.noise.initialize(rng);
-		settings.groundNoiseMediumDetail.noise.initialize(rng);
-		settings.groundNoiseSmallDetail.noise.initialize(rng);
-		settings.hillNoise.noise.initialize(rng);
-		settings.mountainsNoise.noise.initialize(rng);
-		settings.colorNoise.noise.initialize(rng);
 		settings.polesPerturbNoise.noise.initialize(rng);
-		settings.mountainWorley.noise.initialize(rng);
 		
 		/*double[] lowlandColor = RGB(new Color(53, 74, 22));
 		double[] hillsColor =     RGB(new Color(56, 60, 34));
@@ -170,7 +156,10 @@ public class ComplexSurface {
 		double[][] tempMap2 = new double[width][height];
 		
 		if(debugProgress) System.out.println("Continents & Biomes");
-		NoisemapGenerator.genNoisemap(continentMap, settings.continentNoise, null, resMul, debugProgress);
+		double oldNoiseOffset = settings.continentNoise.noiseOffset;
+		settings.continentNoise.setNoiseOffset(oceanFactor / 2.0); //TODO: Find a way to do this without permanently modifying this NoiseConfig
+		NoisemapGenerator.genNoisemap(rng, continentMap, settings.continentNoise, null, resMul, debugProgress);
+		settings.continentNoise.setNoiseOffset(oldNoiseOffset);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				distanceMap[i][j] = (float)(continentMap[i][j] / 12.0);
@@ -178,7 +167,7 @@ public class ComplexSurface {
 			}
 		}
 		
-		NoisemapGenerator.genNoisemap(tempMap, settings.mountainNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.mountainNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			for(int j = 0; j < height; j++) {
@@ -212,8 +201,8 @@ public class ComplexSurface {
 				}
 			}
 		}
-		NoisemapGenerator.genNoisemap(tempMap, settings.lakeNoiseMul, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap2, settings.lakeNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.lakeNoiseMul, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap2, settings.lakeNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				if(continentMap[i][j] < 0) continue;
@@ -244,8 +233,8 @@ public class ComplexSurface {
 				}
 			}
 		}
-		NoisemapGenerator.genNoisemap(tempMap, settings.desertNoise, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap2, settings.taigaNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.desertNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap2, settings.taigaNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			for(int j = 0; j < height; j++) {
@@ -372,10 +361,10 @@ public class ComplexSurface {
 		}
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(finalNoiseMap, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, finalNoiseMap, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
-		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseSmallDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.groundNoiseSmallDetail, continentMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		
 		for(int i = 0; i < width; i++) {
@@ -388,7 +377,7 @@ public class ComplexSurface {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("ground.png"));
 		
 		if(debugProgress) System.out.println("Hills");
-		NoisemapGenerator.genNoisemap(tempMap, settings.hillNoise, hillMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.hillNoise, hillMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double mul = Math.min(1, mountainMap[i][j]);
@@ -398,8 +387,8 @@ public class ComplexSurface {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("hills.png"));
 		
 		if(debugProgress) System.out.println("Mountains");
-		NoisemapGenerator.genNoisemap(tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap2, settings.mountainWorley, mountainMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap2, settings.mountainWorley, mountainMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				if(mountainMap[i][j] > 0) {
@@ -497,7 +486,7 @@ public class ComplexSurface {
 		
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		NoisemapGenerator.genNoisemap(tempMap, settings.colorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(rng, tempMap, settings.colorNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			for(int j = 0; j < height; j++) {
@@ -661,8 +650,13 @@ public class ComplexSurface {
 			}
 		}
 		result.biomeMap = img;
+		
 		if(debugSteps) ImageIO.write(img, "png", new File("biomes.png"));
+		
+		settings.polesPerturbNoise.noise.cleanUp();
+		
 		if(debugProgress) System.out.println("Done.");
+		
 		return result;
 	}
 	
