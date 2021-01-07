@@ -217,7 +217,7 @@ public class GraymoonGen {
 		if(settings.mariaCraterCount > 0) {
 			Random rng = new RanMT().seedCompletely(sRng.nextLong());
 			CraterConfig mariaShapeCraterConfig = new CraterConfig();
-			mariaShapeCraterConfig.setPerturbStrength(0.25).setPerturbScale(0.35).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
+			mariaShapeCraterConfig.setPerturbStrength(0.5).setPerturbScale(0.25).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
 			mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
 			mariaShapeCraterConfig.setFullPeakSize(10).setRingThreshold(128).setRingFunctMul(1);
 			int attemptCntr = 0;
@@ -246,11 +246,11 @@ public class GraymoonGen {
 				marias[i][j] = Math.min(marias[i][j], tempMap[i][j]);
 			}
 		}
-		for(int i = 0; i < width; i++) {
+		/*for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				mariaNoiseMuls[i][j] = Math.max(0, Math.min(1, (marias[i][j] - 0.23) * 5.882352941));
 			}
-		}
+		}*/
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				//Post-scale depth because I'm too lazy to re-do all of the above code
@@ -263,6 +263,7 @@ public class GraymoonGen {
 				
 				marias[i][j] /= 0.4;
 				marias[i][j] = marias[i][j] * 0.3 + 0.1;
+				mariaNoiseMuls[i][j] = Math.max(0, Math.min(1, (marias[i][j] - 0.23) * 5.882352941));
 			}
 		}
 		if(debugProgress) {

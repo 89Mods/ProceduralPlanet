@@ -10,6 +10,7 @@ public class GeneratorResult {
 	public double[][] heightmapRaw   = null;
 	public BufferedImage colorMap    = null;
 	public BufferedImage biomeMap    = null;
+	public BufferedImage oceanMap    = null;
 	
 	public GeneratorResult() {
 		

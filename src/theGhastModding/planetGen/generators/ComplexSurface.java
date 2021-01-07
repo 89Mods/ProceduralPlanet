@@ -12,6 +12,7 @@ import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.utils.NoiseUtils;
 import theGhastModding.planetGen.utils.NoisemapGenerator;
+import theGhastModding.planetGen.utils.PostProcessingEffects;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.WorleyNoise;
 import theGhastModding.planetGen.utils.CraterDistributer;
@@ -654,6 +655,35 @@ public class ComplexSurface {
 		if(debugSteps) ImageIO.write(img, "png", new File("biomes.png"));
 		
 		settings.polesPerturbNoise.noise.cleanUp();
+		
+		if(debugProgress) {
+			System.out.println("Done.");
+			System.out.println("Ocean map");
+		}
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				continentMap[i][j] = finalNoiseMap[i][j] > 0 ? 0.0 : 1.0;
+			}
+		}
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
+		for(int i = 0; i < width; i++) {
+			for(int j = 0; j < height; j++) {
+				continentMap[i][j] = 1.0 - continentMap[i][j];
+				continentMap[i][j] = Math.max(0, Math.min(1, continentMap[i][j]));
+			}
+		}
+		PostProcessingEffects.gaussianBlur(continentMap, tempMap, 1.0 / (double)continentMap.length, 1.0 / (double)continentMap[0].length, (int)(32.0 * (double)width / 4096.0));
+		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) {
+			if(continentMap[i][j] > 0.5) {
+				continue;
+			}else {
+				continentMap[i][j] = Math.min(253.0 / 255.0, tempMap[i][j] * 1.8);
+			}
+			continentMap[i][j] += tempMap2[i][j] * 0.2;
+		}
+		
+		result.oceanMap = MapUtils.renderMap(continentMap);
+		if(debugSteps) ImageIO.write(result.oceanMap, "png", new File("oceans.png"));
 		
 		if(debugProgress) System.out.println("Done.");
 		
