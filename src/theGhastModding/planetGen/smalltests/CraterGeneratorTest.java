@@ -9,10 +9,10 @@ import javax.imageio.ImageIO;
 
 import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
-import theGhastModding.planetGen.utils.CraterGenerator;
+import theGhastModding.planetGen.utils.CraterDistributer;
+import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
 import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
-import theGhastModding.planetGen.utils.CraterGenerator.CraterDistributionSettings;
 
 public class CraterGeneratorTest {
 	
@@ -39,7 +39,7 @@ public class CraterGeneratorTest {
 			NoiseConfig nc = new NoiseConfig(mountainsNoise, true, 1.5, 0.17, 0.6, 0.0, 0.0);
 			CraterDistributionSettings cds = new CraterDistributionSettings(craterCnt, minsize, maxsize, minStrength, maxStrength, flattenedStart, flattenedEnd, nc, 0.8);
 			startTime = System.currentTimeMillis();
-			CraterGenerator.distributeCraters(null, testImg, testCraterMap, bowlCraterConfig, flattenedCraterConfig, cds, rng);
+			CraterDistributer.distributeCraters(null, testImg, testCraterMap, bowlCraterConfig, flattenedCraterConfig, cds, 1.0, rng, true);
 			System.out.println("Took " + ((System.currentTimeMillis() - startTime) / 1000) + "s to generate " + craterCnt + " craters.");
 			
 			for(int i = 0; i < testImg.length; i++) {

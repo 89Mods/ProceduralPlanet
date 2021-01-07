@@ -52,7 +52,7 @@ public class NoisemapGenerator {
 	
 	private static class NoisemapRunner implements Runnable {
 		
-		private int indx,threadCount;
+		private final int indx,threadCount;
 		private NoiseConfig noiseConfig;
 		private double[][] mapOutput,noiseMul;
 		private boolean debugProgress;

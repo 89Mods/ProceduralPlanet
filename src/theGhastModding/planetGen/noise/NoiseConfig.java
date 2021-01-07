@@ -75,4 +75,15 @@ public class NoiseConfig {
 		return this;
 	}
 	
+	public String toString() {
+		String s = "Ridged: " + Boolean.toString(ridged) + "\n";
+		s += String.format("Strength: %#.4f\n", this.noiseStrength);
+		s += String.format("Latitude Scale: %#.4f\n", this.noiseLatitudeScale);
+		s += String.format("Longitude Scale: %#.4f\n", this.noiseLongitudeScale);
+		s += String.format("Distort Strength: %#.4f\n", this.distortStrength);
+		s += String.format("Offset: %#.4f\n", this.noiseOffset);
+		s += String.format("Z-Offset: %#.4f", this.zOffset);
+		return s;
+	}
+	
 }

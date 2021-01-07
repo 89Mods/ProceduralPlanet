@@ -12,12 +12,12 @@ import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.OctaveWorley;
-import theGhastModding.planetGen.utils.CraterGenerator;
+import theGhastModding.planetGen.utils.CraterDistributer;
+import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
 import theGhastModding.planetGen.utils.MapUtils;
 import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.utils.ProgressBars;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
-import theGhastModding.planetGen.utils.CraterGenerator.CraterDistributionSettings;
 
 public class AsteroidMoonGen {
 	
@@ -52,6 +52,38 @@ public class AsteroidMoonGen {
 		
 		public AsteroidGenSettings() {
 			
+		}
+		
+		public String toString() {
+			String s = "Width: " + Integer.toString(width) + "\n";
+			s += "Height: " + Integer.toString(height) + "\n";
+			s += "Radius: " + Integer.toString(planetRadius) + "\n";
+			s += "Shape Noise\n";
+			s += "\t" + shapeNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Ground Noise\n";
+			s += "\t" + groundNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Peak Noise\n";
+			s += "\t" + peakNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Secondary Noise\n";
+			s += "\t" + secondaryNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Color Noise\n";
+			s += "\t" + colorNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Secondary Color Noise\n";
+			s += "\t" + secondColorNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Crater configuration\n";
+			s += "\t" + craterConfig.toString().replace("\n", "\n\t") + "\n";
+			s += "Crater count: " + Integer.toString(craterCount) + "\n";
+			s += String.format("Crater max size: %#.4f\n", this.craterMaxsize);
+			s += String.format("Crater min size: %#.4f\n", this.craterMinsize);
+			s += String.format("Crater max strength: %#.4f\n", this.craterMaxstrength);
+			s += String.format("Crater min strength: %#.4f\n", this.craterMinstrength);
+			s += String.format("Base color: %#.4f,%#.4f,%#.4f\n", this.normalColor[0], this.normalColor[1], this.normalColor[2]);
+			s += String.format("Peaks color: %#.4f,%#.4f,%#.4f\n", this.peaksColor[0], this.peaksColor[1], this.peaksColor[2]);
+			if(secondaryColor != null) s += String.format("Secondary color: %#.4f,%#.4f,%#.4f\n", this.secondaryColor[0], this.secondaryColor[1], this.secondaryColor[2]);
+			s += String.format("Biome color base: %#.4f,%#.4f,%#.4f\n", this.biomeColorNormal[0], this.biomeColorNormal[1], this.biomeColorNormal[2]);
+			s += String.format("Biome color peaks: %#.4f,%#.4f,%#.4f\n", this.biomeColorPeaks[0], this.biomeColorPeaks[1], this.biomeColorPeaks[2]);
+			if(biomeColorSecondary != null) s += String.format("Biome color secondary: %#.4f,%#.4f,%#.4f", this.biomeColorSecondary[0], this.biomeColorSecondary[1], this.biomeColorSecondary[2]);
+			return s;
 		}
 		
 	}
@@ -106,7 +138,7 @@ public class AsteroidMoonGen {
 		
 		if(debugProgress) System.out.println("Craters");
 		CraterDistributionSettings cds = new CraterDistributionSettings(settings.craterCount, settings.craterMinsize, settings.craterMaxsize, settings.craterMinstrength, settings.craterMaxstrength, 0, 1000000, null, 0.7);
-		CraterGenerator.distributeCraters(null, finalNoiseMap, null, settings.craterConfig, settings.craterConfig, cds, rng);
+		CraterDistributer.distributeCraters(null, finalNoiseMap, null, settings.craterConfig, settings.craterConfig, cds, resMul, rng, true);
 		
 		if(debugProgress) System.out.println("Secondary noise");
 		NoisemapGenerator.genNoisemap(tempMap, settings.secondaryNoise, null, resMul, debugProgress);
@@ -259,6 +291,8 @@ public class AsteroidMoonGen {
 			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));
 			ImageIO.write(res.biomeMap, "png", new File("past_outputs/" + name + "_biomes.png"));
+			NoisemapGenerator.cleanUp();
+			CraterDistributer.cleanUp();
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();

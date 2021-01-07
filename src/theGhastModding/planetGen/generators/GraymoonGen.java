@@ -14,9 +14,10 @@ import theGhastModding.planetGen.noise.NoiseConfig;
 import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.OctaveWorley;
+import theGhastModding.planetGen.utils.CraterDistributer;
+import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
 import theGhastModding.planetGen.utils.CraterGenerator;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
-import theGhastModding.planetGen.utils.CraterGenerator.CraterDistributionSettings;
 import theGhastModding.planetGen.utils.MapUtils;
 import theGhastModding.planetGen.utils.ProgressBars;
 
@@ -83,6 +84,68 @@ public class GraymoonGen {
 		public GraymoonGenSettings() {
 			
 		}
+		
+		public String toString() {
+			String s = "Width: " + Integer.toString(width) + "\n";
+			s += "Height: " + Integer.toString(height) + "\n";
+			s += "Radius: " + Integer.toString(planetRadius) + "\n";
+			s += String.format("Maria Latitude Range: %#.4f\n", this.mariaLatitudeRange);
+			s += String.format("Maria Longitude Range: %#.4f\n", this.mariaLongitudeRange);
+			s += String.format("Maria Fade Range: %#.4f\n", this.mariaFadeRange);
+			s += "Maria Shape Crater Count: " + Integer.toString(this.mariaCraterCount) + "\n";
+			s += "Small Crater Count: " + Integer.toString(this.smallCraterCount) + "\n";
+			s += "Huge Crater Count: " + Integer.toString(this.hugeCraterCount) + "\n";
+			s += String.format("Crater Max Size: %#.4f\n", this.craterMaxsize);
+			s += String.format("Crater Min Size: %#.4f\n", this.craterMinsize);
+			s += String.format("Crater Max Strength: %#.4f\n", this.craterMaxstrength);
+			s += String.format("Crater Min Strength: %#.4f\n", this.craterMinstrength);
+			s += "Flattened Crater Start Size: " + Integer.toString(this.craterFlattenedStart) + "\n";
+			s += "Flattened Crater End Size: " + Integer.toString(this.craterFlattenedEnd) + "\n";
+			s += "Bowl Crater Configuration:\n";
+			s += "\t" + bowlCraterConfig.toString().replace("\n", "\n\t") + "\n";
+			s += "Flattened Crater Configuration:\n";
+			s += "\t" + flattenedCraterConfig.toString().replace("\n", "\n\t") + "\n";
+			s += "Maria Crater Configuration:\n";
+			s += "\t" + mariaCraterConfig.toString().replace("\n", "\n\t") + "\n";
+			s += "Maria Noise\n";
+			s += "\t" + mariaNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Mountain biome Noise\n";
+			s += "\t" + mountainNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Large Detail Ground Noise\n";
+			s += "\t" + groundNoiseLargeDetail.toString().replace("\n", "\n\t") + "\n";
+			s += "Medium Detail Ground Noise\n";
+			s += "\t" + groundNoiseMediumDetail.toString().replace("\n", "\n\t") + "\n";
+			s += "Small Detail Ground Noise\n";
+			s += "\t" + groundNoiseSmallDetail.toString().replace("\n", "\n\t") + "\n";
+			s += "Mountains Noise\n";
+			s += "\t" + mountainsNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Crater Mountains Noise\n";
+			s += "\t" + craterMountainsNoise.toString().replace("\n", "\n\t") + "\n";
+			s += "Color Noise\n";
+			s += "\t" + colorNoise.toString().replace("\n", "\n\t") + "\n";
+			if(secondaryColor != null) {
+				s += "Secondary Color Noise\n";
+				s += "\t" + secondColorNoise.toString().replace("\n", "\n\t") + "\n";
+			}
+			s += "Crater Rim Color Noise\n";
+			s += "\t" + craterRimColorNoise.toString().replace("\n", "\n\t") + "\n";
+			s += String.format("Base color: %#.4f,%#.4f,%#.4f\n", this.normalColor[0], this.normalColor[1], this.normalColor[2]);
+			s += String.format("Mountains color: %#.4f,%#.4f,%#.4f\n", this.mountainsColor[0], this.mountainsColor[1], this.mountainsColor[2]);
+			s += String.format("Marias color: %#.4f,%#.4f,%#.4f\n", this.mariasColor[0], this.mariasColor[1], this.mariasColor[2]);
+			if(secondaryColor != null) s += String.format("Secondary color: %#.4f,%#.4f,%#.4f\n", this.secondaryColor[0], this.secondaryColor[1], this.secondaryColor[2]);
+			s += String.format("Crater Rim Fades: %#.4f,%#.4f,%#.4f\n", this.craterRimFades[0], this.craterRimFades[1], this.craterRimFades[2]);
+			s += String.format("Maria Crater Rim Fades: %#.4f,%#.4f,%#.4f\n", this.mariaCraterRimFades[0], this.mariaCraterRimFades[1], this.mariaCraterRimFades[2]);
+			s += String.format("Crater Rim Fade Start: %#.4f\n", this.craterRimFadeStart);
+			s += String.format("Crater Rim Fade End: %#.4f\n", this.craterRimFadeEnd);
+			s += String.format("Maria Crater Rim Fade Start: %#.4f\n", this.mariaCraterRimFadeStart);
+			s += String.format("Maria Crater Rim Fade End: %#.4f\n", this.mariaCraterRimFadeEnd);
+			s += String.format("Biome color base: %#.4f,%#.4f,%#.4f\n", this.normalBiomeColor[0], this.normalBiomeColor[1], this.normalBiomeColor[2]);
+			s += String.format("Biome color mountains: %#.4f,%#.4f,%#.4f\n", this.mountainsBiomeColor[0], this.mountainsBiomeColor[1], this.mountainsBiomeColor[2]);
+			s += String.format("Biome color marias: %#.4f,%#.4f,%#.4f\n", this.mariasBiomeColor[0], this.mariasBiomeColor[1], this.mariasBiomeColor[2]);
+			if(biomeColorSecondary != null) s += String.format("Biome color secondary: %#.4f,%#.4f,%#.4f", this.biomeColorSecondary[0], this.biomeColorSecondary[1], this.biomeColorSecondary[2]);
+			return s;
+		}
+		
 	}
 	
 	public static GeneratorResult generate(Random rng, GraymoonGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
@@ -177,7 +240,7 @@ public class GraymoonGen {
 			double val = marias[px][py];
 			if(val > 0.3 && val < 0.4) {
 				mariaShapeCraterConfig.setSize(200 + rng.nextInt(32)).setCraterStrength(0.5);
-				craterGen.genCrater(tempMap, null, lat, lon, mariaShapeCraterConfig, null, rng);
+				craterGen.genCrater(tempMap, null, 0, tempMap[0].length, lat, lon, mariaShapeCraterConfig, null, rng);
 			}else {
 				i--;
 				attemptCntr++;
@@ -201,7 +264,7 @@ public class GraymoonGen {
 				//Post-scale depth because I'm too lazy to re-do all of the above code
 				if(marias[i][j] > 0.25) {
 					marias[i][j] = (marias[i][j] - 0.25) * 6.6666666;
-					marias[i][j] = CraterGenerator.biasFunction(marias[i][j], -0.65);
+					marias[i][j] = CraterDistributer.biasFunction(marias[i][j], -0.65);
 					marias[i][j] *= marias[i][j];
 					marias[i][j] = marias[i][j] / 6.666666 + 0.25;
 				}
@@ -295,7 +358,6 @@ public class GraymoonGen {
 		
 		if(debugProgress) {
 			System.out.println("Craters");
-			ProgressBars.printBar();
 		}
 		boolean[][] craterDistr = new boolean[1024][512];
 		boolean[][] mariaCraterDistr = new boolean[1024][512];
@@ -318,15 +380,11 @@ public class GraymoonGen {
 		int inMariaCraterCount = (int)(mariaRatio * settings.smallCraterCount);
 		double cS = settings.bowlCraterConfig.ringThreshold / settings.craterMaxsize * (settings.craterMaxstrength - settings.craterMinstrength) + settings.craterMinstrength;
 		CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
-		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
-		if(debugProgress) ProgressBars.printProgress(24, 75);
+		CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, rng, debugProgress);
 		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
-		CraterGenerator.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, rng);
-		if(debugProgress) ProgressBars.printProgress(49, 75);
+		CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, rng, debugProgress);
 		cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
-		CraterGenerator.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, rng);
-		if(debugProgress) ProgressBars.printProgress(74, 75);
-		if(debugProgress) ProgressBars.finishProgress();
+		CraterDistributer.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, resMul, rng, debugProgress);
 		if(debugSteps) {
 			ImageIO.write(MapUtils.renderMap(craterMap1), "png", new File("crater_map.png"));
 			ImageIO.write(MapUtils.renderMap(craterMap2), "png", new File("crater_map_2.png"));
@@ -508,6 +566,8 @@ public class GraymoonGen {
 			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));
 			ImageIO.write(res.biomeMap, "png", new File("past_outputs/" + name + "_biomes.png"));
+			NoisemapGenerator.cleanUp();
+			CraterDistributer.cleanUp();
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();

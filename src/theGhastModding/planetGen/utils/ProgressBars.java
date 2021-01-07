@@ -23,7 +23,8 @@ public class ProgressBars {
 	}
 	
 	public static void finishProgress() {
-		System.out.println(">");
+		for(int i = printed; i < 100; i++) System.out.print(">");
+		System.out.println();
 		printed = 0;
 	}
 	

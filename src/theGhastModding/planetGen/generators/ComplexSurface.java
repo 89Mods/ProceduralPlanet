@@ -14,6 +14,7 @@ import theGhastModding.planetGen.utils.NoiseUtils;
 import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.WorleyNoise;
+import theGhastModding.planetGen.utils.CraterDistributer;
 import theGhastModding.planetGen.utils.MapUtils;
 import theGhastModding.planetGen.utils.ProgressBars;
 import theGhastModding.planetGen.utils.SphereUtils;
@@ -694,6 +695,8 @@ public class ComplexSurface {
 			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));
 			ImageIO.write(res.biomeMap, "png", new File("past_outputs/" + name + "_biomes.png"));
+			NoisemapGenerator.cleanUp();
+			CraterDistributer.cleanUp();
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();
