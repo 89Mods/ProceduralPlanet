@@ -98,7 +98,7 @@ public class ComplexSurface {
 		return 1.0 / (1.0 + Math.exp(-x));
 	}
 	
-	public static GeneratorResult generate(Random rng, ComplexGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
+	public static GeneratorResult generate(Random sRng, ComplexGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
 		GeneratorResult result = new GeneratorResult();
 		final int width = settings.width;
 		final int height = settings.height;
@@ -131,7 +131,7 @@ public class ComplexSurface {
 		
 		File pastOutputsFolder = new File("past_outputs");
 		if(!pastOutputsFolder.exists()) pastOutputsFolder.mkdirs();
-		settings.polesPerturbNoise.noise.initialize(rng);
+		settings.polesPerturbNoise.noise.initialize(new RanMT().seedCompletely(sRng.nextLong()));
 		
 		/*double[] lowlandColor = RGB(new Color(53, 74, 22));
 		double[] hillsColor =     RGB(new Color(56, 60, 34));
@@ -158,7 +158,7 @@ public class ComplexSurface {
 		if(debugProgress) System.out.println("Continents & Biomes");
 		double oldNoiseOffset = settings.continentNoise.noiseOffset;
 		settings.continentNoise.setNoiseOffset(oceanFactor / 2.0); //TODO: Find a way to do this without permanently modifying this NoiseConfig
-		NoisemapGenerator.genNoisemap(rng, continentMap, settings.continentNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), continentMap, settings.continentNoise, null, resMul, debugProgress);
 		settings.continentNoise.setNoiseOffset(oldNoiseOffset);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -167,7 +167,7 @@ public class ComplexSurface {
 			}
 		}
 		
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.mountainNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.mountainNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			for(int j = 0; j < height; j++) {
@@ -201,8 +201,8 @@ public class ComplexSurface {
 				}
 			}
 		}
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.lakeNoiseMul, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(rng, tempMap2, settings.lakeNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.lakeNoiseMul, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.lakeNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				if(continentMap[i][j] < 0) continue;
@@ -233,8 +233,8 @@ public class ComplexSurface {
 				}
 			}
 		}
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.desertNoise, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(rng, tempMap2, settings.taigaNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.desertNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.taigaNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			for(int j = 0; j < height; j++) {
@@ -361,10 +361,10 @@ public class ComplexSurface {
 		}
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(rng, finalNoiseMap, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), finalNoiseMap, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.groundNoiseSmallDetail, continentMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.groundNoiseSmallDetail, continentMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		
 		for(int i = 0; i < width; i++) {
@@ -377,7 +377,7 @@ public class ComplexSurface {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("ground.png"));
 		
 		if(debugProgress) System.out.println("Hills");
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.hillNoise, hillMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.hillNoise, hillMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double mul = Math.min(1, mountainMap[i][j]);
@@ -387,8 +387,8 @@ public class ComplexSurface {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("hills.png"));
 		
 		if(debugProgress) System.out.println("Mountains");
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(rng, tempMap2, settings.mountainWorley, mountainMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.mountainWorley, mountainMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				if(mountainMap[i][j] > 0) {
@@ -486,7 +486,7 @@ public class ComplexSurface {
 		
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.colorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.colorNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			for(int j = 0; j < height; j++) {

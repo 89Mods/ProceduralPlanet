@@ -88,7 +88,7 @@ public class AsteroidMoonGen {
 		
 	}
 	
-	public static GeneratorResult generate(Random rng, AsteroidGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
+	public static GeneratorResult generate(Random sRng, AsteroidGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
 		GeneratorResult result = new GeneratorResult();
 		
 		// Copy commonly-used config items into local variables to make the code more readable
@@ -102,7 +102,7 @@ public class AsteroidMoonGen {
 		double[][] finalNoiseMap = new double[width][height];
 		
 		if(debugProgress) System.out.println("Shape");
-		NoisemapGenerator.genNoisemap(rng, shapeMap, settings.shapeNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), shapeMap, settings.shapeNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j]));
@@ -111,7 +111,7 @@ public class AsteroidMoonGen {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(shapeMap), "png", new File("shape.png"));
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.groundNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.groundNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] = shapeMap[i][j] + tempMap[i][j];
@@ -120,7 +120,7 @@ public class AsteroidMoonGen {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("ground.png"));
 		
 		if(debugProgress) System.out.println("Peaks");
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.peakNoise, shapeMap, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.peakNoise, shapeMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] += tempMap[i][j];
@@ -130,10 +130,10 @@ public class AsteroidMoonGen {
 		
 		if(debugProgress) System.out.println("Craters");
 		CraterDistributionSettings cds = new CraterDistributionSettings(settings.craterCount, settings.craterMinsize, settings.craterMaxsize, settings.craterMinstrength, settings.craterMaxstrength, 0, 1000000, null, 0.7);
-		CraterDistributer.distributeCraters(null, finalNoiseMap, null, settings.craterConfig, settings.craterConfig, cds, resMul, rng, true);
+		CraterDistributer.distributeCraters(null, finalNoiseMap, null, settings.craterConfig, settings.craterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), true);
 		
 		if(debugProgress) System.out.println("Secondary noise");
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.secondaryNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.secondaryNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] += tempMap[i][j];
@@ -170,9 +170,9 @@ public class AsteroidMoonGen {
 		
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		NoisemapGenerator.genNoisemap(rng, tempMap, settings.colorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.colorNoise, null, resMul, debugProgress);
 		if(settings.secondaryColor != null) {
-			NoisemapGenerator.genNoisemap(rng, tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
+			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j] * 7.0)) - 0.42;
