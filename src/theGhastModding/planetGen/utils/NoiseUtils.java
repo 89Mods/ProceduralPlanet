@@ -15,9 +15,9 @@ public class NoiseUtils {
 		double a = Math.sin(fRdx) * fYSin;
 		double b = Math.cos(fRdx) * fYSin;
 		double c = Math.cos(fRdy);
-		double offsetx = nc.noiseScale < 1 ? 1.55 / nc.noiseScale : 1.55;
-		double offsety = nc.noiseScale < 1 ? 1.55 / nc.noiseScale : 1.55;
-		double val = distortedNoise(nc.noise, offsetx + a / nc.noiseScale + nc.zOffset, offsetx + b / nc.noiseScale + nc.zOffset, offsety + c / nc.noiseScale + nc.zOffset, nc.distortStrength);
+		double offsetx = nc.noiseLongitudeScale < 1 ? 1.55 / nc.noiseLongitudeScale : 1.55;
+		double offsety = nc.noiseLatitudeScale < 1 ? 1.55 / nc.noiseLatitudeScale : 1.55;
+		double val = distortedNoise(nc.noise, offsetx + a / nc.noiseLongitudeScale + nc.zOffset, offsetx + b / nc.noiseLongitudeScale + nc.zOffset, offsety + c / nc.noiseLatitudeScale + nc.zOffset, nc.distortStrength);
 		val = val + nc.noiseOffset;
 		if(nc.ridged) val = Math.abs(val);
 		return val * nc.noiseStrength;

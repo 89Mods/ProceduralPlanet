@@ -5,7 +5,8 @@ public class NoiseConfig {
 	public NoiseFunction noise;
 	public boolean ridged = false;
 	public double noiseStrength;
-	public double noiseScale;
+	public double noiseLatitudeScale;
+	public double noiseLongitudeScale;
 	public double distortStrength;
 	public double noiseOffset;
 	public double zOffset;
@@ -23,7 +24,7 @@ public class NoiseConfig {
 		this.noise = noise;
 		this.ridged = ridged;
 		this.noiseStrength = noiseStrength;
-		this.noiseScale = noiseScale;
+		this.noiseLatitudeScale = noiseLongitudeScale = noiseScale;
 		this.distortStrength = distortStrength;
 		this.noiseOffset = noiseOffset;
 		this.zOffset = zOffset;
@@ -45,7 +46,17 @@ public class NoiseConfig {
 	}
 	
 	public NoiseConfig setNoiseScale(double noiseScale) {
-		this.noiseScale = noiseScale;
+		this.noiseLatitudeScale = noiseLongitudeScale = noiseScale;
+		return this;
+	}
+	
+	public NoiseConfig setNoiseLatitudeScale(double noiseLatitudeScale) {
+		this.noiseLatitudeScale = noiseLatitudeScale;
+		return this;
+	}
+	
+	public NoiseConfig setNoiseLongitudeScale(double noiseLongitudeScale) {
+		this.noiseLongitudeScale = noiseLongitudeScale;
 		return this;
 	}
 	

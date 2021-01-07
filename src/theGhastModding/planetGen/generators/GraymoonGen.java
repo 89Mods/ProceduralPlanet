@@ -47,20 +47,19 @@ public class GraymoonGen {
 		
 		public int craterFlattenedStart = 14;
 		public int craterFlattenedEnd = 28;
-		public int craterRingThreshold = 96;
 		
-		public CraterConfig bowlCraterConfig      = new CraterConfig(0, 0, 0.2, 0.4, 1.0, 3.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, craterRingThreshold, 1.0);
-		public CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, craterRingThreshold, 0.9);
+		public CraterConfig bowlCraterConfig      = new CraterConfig(0, 0, 0.2, 0.4, 1.0, 3.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, 96, 1.0);
+		public CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, 96, 0.9);
 		public CraterConfig mariaCraterConfig     = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
 		
 		public NoiseConfig mariaNoise                = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(3.0).setNoiseScale(2.0).setDistortStrength(0.25).setNoiseOffset(0.1);
 		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1.0).setNoiseScale(0.54).setDistortStrength(0.25).setNoiseOffset(0.375);
-		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 5, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.45).setNoiseScale(0.65).setDistortStrength(0.5).setNoiseOffset(0.25);
-		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 7, 2.0, 0.7)).setIsRidged(false).setNoiseStrength(0.45).setNoiseScale(0.45).setDistortStrength(0.75).setNoiseOffset(0.25);
-		public NoiseConfig mountainsNoise            = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 12, 2.0, 0.65)).setIsRidged(true).setNoiseStrength(1.35).setNoiseScale(0.72).setDistortStrength(0.43).setNoiseOffset(0);
-		public NoiseConfig craterMountainsNoise      = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 9, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.5).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0);
-		public NoiseConfig secondaryNoise            = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 6, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.5).setDistortStrength(0.3).setNoiseOffset(0.25);
-		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveWorley(32, 32, 32, 7, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.25).setNoiseScale(1.0).setDistortStrength(0.75).setNoiseOffset(0);
+		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 8, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.75).setNoiseScale(0.7).setDistortStrength(0.5).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.3).setDistortStrength(0.75).setNoiseOffset(0.25);
+		public NoiseConfig groundNoiseSmallDetail    = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.075).setNoiseScale(0.15).setDistortStrength(0.25).setNoiseOffset(0.15);
+		public NoiseConfig mountainsNoise            = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 10, 2.0, 0.65)).setIsRidged(true).setNoiseStrength(1.35).setNoiseScale(0.72).setDistortStrength(0.43).setNoiseOffset(0);
+		public NoiseConfig craterMountainsNoise      = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 7, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.5).setNoiseScale(0.17).setDistortStrength(0.6).setNoiseOffset(0);
+		public NoiseConfig colorNoise                = new NoiseConfig(new OctaveWorley(32, 32, 32, 9, 2.0, 0.7)).setIsRidged(true).setNoiseStrength(1.25).setNoiseScale(0.75).setDistortStrength(0.75).setNoiseOffset(0);
 		public NoiseConfig secondColorNoise          = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 2, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.0).setNoiseScale(1.15).setDistortStrength(0.25).setNoiseOffset(0.325);
 		public NoiseConfig craterRimColorNoise       = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3, 2.0, 0.5)).setIsRidged(false).setNoiseStrength(2.4).setNoiseScale(0.75).setDistortStrength(0.25).setNoiseOffset(0.275);
 		
@@ -71,8 +70,8 @@ public class GraymoonGen {
 		
 		public double[] craterRimFades          = new double[] {0.4, 0.4, 0.4};
 		public double[] mariaCraterRimFades     = new double[] {0.25, 0.25, 0.25};
-		public double   craterRimFadeStart      = 0.3;
-		public double   craterRimFadeEnd        = 0.5;
+		public double   craterRimFadeStart      = 0.25;
+		public double   craterRimFadeEnd        = 0.55;
 		public double   mariaCraterRimFadeStart = 0.0;
 		public double   mariaCraterRimFadeEnd   = 0.15;
 		
@@ -92,9 +91,9 @@ public class GraymoonGen {
 		settings.mountainNoise.noise.initialize(rng);
 		settings.groundNoiseLargeDetail.noise.initialize(rng);
 		settings.groundNoiseMediumDetail.noise.initialize(rng);
+		settings.groundNoiseSmallDetail.noise.initialize(rng);
 		settings.mountainsNoise.noise.initialize(rng);
 		settings.craterMountainsNoise.noise.initialize(rng);
-		settings.secondaryNoise.noise.initialize(rng);
 		settings.colorNoise.noise.initialize(rng);
 		settings.secondColorNoise.noise.initialize(rng);
 		settings.craterRimColorNoise.noise.initialize(rng);
@@ -259,8 +258,6 @@ public class GraymoonGen {
 		
 		if(debugProgress) System.out.println("Ground");
 		NoisemapGenerator.genNoisemap(finalNoiseMap, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, mariaNoiseMuls, resMul, debugProgress);
-		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		double inMariaMul = 0.15;
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -336,12 +333,13 @@ public class GraymoonGen {
 		}
 		
 		if(debugProgress) System.out.println("Secondary Noise");
-		NoisemapGenerator.genNoisemap(tempMap, settings.secondaryNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(tempMap, settings.groundNoiseMediumDetail, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(tempMap2, settings.groundNoiseSmallDetail, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				double val = tempMap[i][j];
+				double val = tempMap[i][j] + tempMap2[i][j];
 				if(marias[i][j] < 0.4) {
-					val *= Math.max(0.075, (marias[i][j] / 0.4));
+					val *= Math.max(0.1, (marias[i][j] / 0.4));
 				}
 				finalNoiseMap[i][j] += val;
 			}

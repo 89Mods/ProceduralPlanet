@@ -25,8 +25,10 @@ public class NoisemapGenerator {
 		if(mapBuffer == null || mapBuffer.length < mapOutput.length || mapBuffer[0].length < mapOutput[0].length) {
 			mapBuffer = new double[mapOutput.length][mapOutput[0].length];
 		}
-		double oldScale = noiseConfig.noiseScale;
-		noiseConfig.noiseScale *= planetSizeScale;
+		double oldLatScale = noiseConfig.noiseLatitudeScale;
+		double oldLonScale = noiseConfig.noiseLongitudeScale;
+		noiseConfig.noiseLatitudeScale *= planetSizeScale;
+		noiseConfig.noiseLongitudeScale *= planetSizeScale;
 		try {
 			for(int i = 0; i < maxThreads; i++) {
 				noisemapRunners[i].prepare(mapBuffer, mapOutput.length, mapOutput[0].length, noiseConfig, noiseMul, debugProgress && i == 0);
@@ -39,7 +41,8 @@ public class NoisemapGenerator {
 				System.arraycopy(mapBuffer[i], 0, mapOutput[i], 0, mapOutput[i].length);
 			}
 		} finally {
-			noiseConfig.noiseScale = oldScale;
+			noiseConfig.noiseLatitudeScale = oldLatScale;
+			noiseConfig.noiseLongitudeScale = oldLonScale;
 		}
 	}
 	

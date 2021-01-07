@@ -432,8 +432,10 @@ public class ComplexSurface {
 			System.out.println("Poles");
 			ProgressBars.printBar();
 		}
-		double oldScale = settings.polesPerturbNoise.noiseScale;
-		settings.polesPerturbNoise.noiseScale *= resMul;
+		double oldLatScale = settings.polesPerturbNoise.noiseLatitudeScale;
+		double oldLonScale = settings.polesPerturbNoise.noiseLongitudeScale;
+		settings.polesPerturbNoise.noiseLatitudeScale *= resMul;
+		settings.polesPerturbNoise.noiseLongitudeScale *= resMul;
 		try {
 			for(int i = 0; i < width; i++) {
 				if(debugProgress) ProgressBars.printProgress(i, width);
@@ -455,7 +457,8 @@ public class ComplexSurface {
 				}
 			}
 		} finally {
-			settings.polesPerturbNoise.noiseScale = oldScale;
+			settings.polesPerturbNoise.noiseLatitudeScale = oldLatScale;
+			settings.polesPerturbNoise.noiseLongitudeScale = oldLonScale;
 		}
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) {
 			tempMap[i][j] = poles[i][j] == 0 ? 0 : 0.01;
