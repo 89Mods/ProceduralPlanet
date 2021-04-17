@@ -3,6 +3,8 @@ package theGhastModding.planetGen.utils;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
@@ -11,7 +13,6 @@ import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.utils.NoiseUtils;
 import theGhastModding.planetGen.noise.OctaveNoise2D;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.PerlinNoise3D;
@@ -118,6 +119,42 @@ public class CraterGenerator {
 		
 		public static CraterConfig genBowlOnlyConfig(double size, double craterStrength, double perturbStrength, double perturbScale, double p1, double p2) {
 			return new CraterConfig(size, craterStrength, perturbStrength, perturbScale, p1, p2, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
+		}
+		
+		public void serialize(DataOutputStream out) throws Exception {
+			out.writeDouble(size);
+			out.writeDouble(craterStrength);
+			out.writeDouble(perturbStrength);
+			out.writeDouble(perturbScale);
+			out.writeDouble(p1);
+			out.writeDouble(p2);
+			out.writeDouble(floorHeight);
+			out.writeDouble(ejectaStrength);
+			out.writeDouble(ejectaStretch);
+			out.writeDouble(ejectaPerturbStrength);
+			out.writeDouble(ejectaPerturbScale);
+			out.writeDouble(fullPeakSize);
+			out.writeDouble(ringThreshold);
+			out.writeDouble(ringFunctMul);
+		}
+		
+		public static CraterConfig deserialize(DataInputStream in) throws Exception {
+			CraterConfig res = new CraterConfig();
+			res.size = in.readDouble();
+			res.craterStrength = in.readDouble();
+			res.perturbStrength = in.readDouble();
+			res.perturbScale = in.readDouble();
+			res.p1 = in.readDouble();
+			res.p2 = in.readDouble();
+			res.floorHeight = in.readDouble();
+			res.ejectaStrength = in.readDouble();
+			res.ejectaStretch = in.readDouble();
+			res.ejectaPerturbStrength = in.readDouble();
+			res.ejectaPerturbScale = in.readDouble();
+			res.fullPeakSize = in.readDouble();
+			res.ringThreshold = in.readDouble();
+			res.ringFunctMul = in.readDouble();
+			return res;
 		}
 		
 		@Override
@@ -255,7 +292,7 @@ public class CraterGenerator {
 					}
 					if(bb && Math.abs(dist) >= enddist) {
 						iend = i + stepSize;
-						break;
+						break;Continue on laptop; center of mass position is weighted average
 					}
 				}
 				istart = Math.max(0, istart);

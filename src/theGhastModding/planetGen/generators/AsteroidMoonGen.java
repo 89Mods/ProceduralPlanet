@@ -2,6 +2,8 @@ package theGhastModding.planetGen.generators;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Random;
@@ -52,6 +54,64 @@ public class AsteroidMoonGen {
 		
 		public AsteroidGenSettings() {
 			
+		}
+		
+		public void serialize(DataOutputStream out) throws Exception {
+			out.writeInt(width);
+			out.writeInt(height);
+			out.writeInt(planetRadius);
+			out.writeBoolean(ridgedShape);
+			shapeNoise.serialize(out);
+			groundNoise.serialize(out);
+			peakNoise.serialize(out);
+			secondaryNoise.serialize(out);
+			secondColorNoise.serialize(out);
+			colorNoise.serialize(out);
+			craterConfig.serialize(out);
+			out.writeInt(craterCount);
+			out.writeDouble(craterMaxsize);
+			out.writeDouble(craterMinsize);
+			out.writeDouble(craterMaxstrength);
+			out.writeDouble(craterMinstrength);
+			out.writeDouble(normalColor[0]); out.writeDouble(normalColor[1]); out.writeDouble(normalColor[2]);
+			out.writeDouble(peaksColor[0]); out.writeDouble(peaksColor[1]); out.writeDouble(peaksColor[2]);
+			out.writeBoolean(secondaryColor != null);
+			if(secondaryColor != null) out.writeDouble(secondaryColor[0]); out.writeDouble(secondaryColor[1]); out.writeDouble(secondaryColor[2]);
+			out.writeDouble(biomeColorNormal[0]); out.writeDouble(biomeColorNormal[1]); out.writeDouble(biomeColorNormal[2]);
+			out.writeDouble(biomeColorPeaks[0]); out.writeDouble(biomeColorPeaks[1]); out.writeDouble(biomeColorPeaks[2]);
+			out.writeBoolean(biomeColorSecondary != null);
+			if(biomeColorSecondary != null) out.writeDouble(biomeColorSecondary[0]); out.writeDouble(biomeColorSecondary[1]); out.writeDouble(biomeColorSecondary[2]);
+		}
+		
+		public static AsteroidGenSettings deserialize(DataInputStream in) throws Exception {
+			AsteroidGenSettings res = new AsteroidGenSettings();
+			res.width = in.readInt();
+			res.height = in.readInt();
+			res.planetRadius = in.readInt();
+			res.ridgedShape = in.readBoolean();
+			res.shapeNoise = NoiseConfig.deserialize(in);
+			res.groundNoise = NoiseConfig.deserialize(in);
+			res.peakNoise = NoiseConfig.deserialize(in);
+			res.secondaryNoise = NoiseConfig.deserialize(in);
+			res.secondColorNoise = NoiseConfig.deserialize(in);
+			res.colorNoise = NoiseConfig.deserialize(in);
+			res.craterConfig = CraterConfig.deserialize(in);
+			res.craterCount = in.readInt();
+			res.craterMaxsize = in.readDouble();
+			res.craterMinsize = in.readDouble();
+			res.craterMaxstrength = in.readDouble();
+			res.craterMinstrength = in.readDouble();
+			res.normalColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.peaksColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			if(in.readBoolean()) {
+				res.secondaryColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			}
+			res.biomeColorNormal = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.biomeColorPeaks = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			if(in.readBoolean()) {
+				res.biomeColorSecondary = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			}
+			return res;
 		}
 		
 		public String toString() {

@@ -1,5 +1,8 @@
 package theGhastModding.planetGen.noise;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 public class NoiseConfig {
 	
 	public NoiseFunction noise;
@@ -73,6 +76,113 @@ public class NoiseConfig {
 	public NoiseConfig setZOffset(double zOffset) {
 		this.zOffset = zOffset;
 		return this;
+	}
+	
+	public void serialize(DataOutputStream out) throws Exception {
+		//Can only account for noise functions defined in this library for now...
+		int width;
+		int height;
+		int depth = 1;
+		int octaves = 1;
+		double lacunarity = 0;
+		double persistence = 0;
+		boolean isWorley = false;
+		if(noise instanceof PerlinNoise2D) {
+			width = noise.getWidth();
+			height = noise.getHeight();
+		}else
+		if(noise instanceof PerlinNoise3D) {
+			width = noise.getWidth();
+			height = noise.getHeight();
+			depth = noise.getDepth();
+		}else
+		if(noise instanceof WorleyNoise) {
+			isWorley = true;
+			width = noise.getWidth();
+			height = noise.getHeight();
+			depth = noise.getDepth();
+		}else
+		if(noise instanceof OctaveNoise2D) {
+			width = noise.getWidth();
+			height = noise.getHeight();
+			octaves = ((OctaveNoise2D)noise).getOctaves();
+			lacunarity = ((OctaveNoise2D)noise).getLacunarity();
+			persistence = ((OctaveNoise2D)noise).getPersistence();
+		}else
+		if(noise instanceof OctaveNoise3D) {
+			width = noise.getWidth();
+			height = noise.getHeight();
+			depth = noise.getDepth();
+			octaves = ((OctaveNoise3D)noise).getOctaves();
+			lacunarity = ((OctaveNoise3D)noise).getLacunarity();
+			persistence = ((OctaveNoise3D)noise).getPersistence();
+		}else
+		if(noise instanceof OctaveWorley) {
+			isWorley = true;
+			width = noise.getWidth();
+			height = noise.getHeight();
+			depth = noise.getDepth();
+			octaves = ((OctaveWorley)noise).getOctaves();
+			lacunarity = ((OctaveWorley)noise).getLacunarity();
+			persistence = ((OctaveWorley)noise).getPersistence();
+		}else {
+			throw new Exception("Unknown noise function. Cannot serialize.");
+		}
+		out.writeBoolean(isWorley);
+		out.writeInt(width);
+		out.writeInt(height);
+		out.writeInt(depth);
+		out.writeInt(octaves);
+		out.writeDouble(lacunarity);
+		out.writeDouble(persistence);
+		
+		out.writeBoolean(ridged);
+		out.writeDouble(noiseStrength);
+		out.writeDouble(noiseLatitudeScale);
+		out.writeDouble(noiseLongitudeScale);
+		out.writeDouble(distortStrength);
+		out.writeDouble(noiseOffset);
+		out.writeDouble(zOffset);
+	}
+	
+	public static NoiseConfig deserialize(DataInputStream in) throws Exception {
+		NoiseConfig conf = new NoiseConfig();
+		boolean isWorley = in.readBoolean();
+		int width = in.readInt();
+		int height = in.readInt();
+		int depth = in.readInt();
+		int octaves = in.readInt();
+		double lacunarity = in.readDouble();
+		double persistence = in.readDouble();
+		if(isWorley) {
+			if(octaves == 1) {
+				conf.noise = new WorleyNoise(width, height, depth);
+			}else {
+				conf.noise = new OctaveWorley(width, height, depth, octaves, lacunarity, persistence);
+			}
+		}else {
+			if(depth == 1) {
+				if(octaves == 1) {
+					conf.noise = new PerlinNoise2D(width, height);
+				}else {
+					conf.noise = new OctaveNoise2D(width, height, octaves, lacunarity, persistence);
+				}
+			}else {
+				if(octaves == 1) {
+					conf.noise = new PerlinNoise3D(width, height, depth);
+				}else {
+					conf.noise = new OctaveNoise3D(width, height, depth, octaves, lacunarity, persistence);
+				}
+			}
+		}
+		conf.ridged = in.readBoolean();
+		conf.noiseStrength = in.readDouble();
+		conf.noiseLatitudeScale = in.readDouble();
+		conf.noiseLongitudeScale = in.readDouble();
+		conf.distortStrength = in.readDouble();
+		conf.noiseOffset = in.readDouble();
+		conf.zOffset = in.readDouble();
+		return conf;
 	}
 	
 	public String toString() {

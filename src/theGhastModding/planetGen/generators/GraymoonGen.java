@@ -2,6 +2,8 @@ package theGhastModding.planetGen.generators;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
@@ -83,6 +85,112 @@ public class GraymoonGen {
 		
 		public GraymoonGenSettings() {
 			
+		}
+		
+		public void serialize(DataOutputStream out) throws Exception {
+			out.writeInt(width);
+			out.writeInt(height);
+			out.writeInt(planetRadius);
+			out.writeDouble(mariaLatitudeRange);
+			out.writeDouble(mariaLongitudeRange);
+			out.writeDouble(mariaFadeRange);
+			out.writeInt(mariaCraterCount);
+			out.writeInt(smallCraterCount);
+			out.writeInt(hugeCraterCount);
+			out.writeDouble(craterMaxsize);
+			out.writeDouble(craterMinsize);
+			out.writeDouble(craterMaxstrength);
+			out.writeDouble(craterMinstrength);
+			out.writeDouble(mariaCraterMaxsize);
+			out.writeDouble(mariaCraterMinsize);
+			out.writeDouble(mariaCraterMaxstrength);
+			out.writeDouble(mariaCraterMinstrength);
+			out.writeInt(craterFlattenedStart);
+			out.writeInt(craterFlattenedEnd);
+			bowlCraterConfig.serialize(out);
+			flattenedCraterConfig.serialize(out);
+			mariaCraterConfig.serialize(out);
+			mariaNoise.serialize(out);
+			mountainNoise.serialize(out);
+			groundNoiseLargeDetail.serialize(out);
+			groundNoiseMediumDetail.serialize(out);
+			groundNoiseSmallDetail.serialize(out);
+			mountainsNoise.serialize(out);
+			craterMountainsNoise.serialize(out);
+			colorNoise.serialize(out);
+			secondColorNoise.serialize(out);
+			craterRimColorNoise.serialize(out);
+			out.writeDouble(normalColor[0]); out.writeDouble(normalColor[1]); out.writeDouble(normalColor[2]);
+			out.writeDouble(mountainsColor[0]); out.writeDouble(mountainsColor[1]); out.writeDouble(mountainsColor[2]);
+			out.writeDouble(mariasColor[0]); out.writeDouble(mariasColor[1]); out.writeDouble(mariasColor[2]);
+			out.writeBoolean(secondaryColor != null);
+			if(secondaryColor != null) out.writeDouble(secondaryColor[0]); out.writeDouble(secondaryColor[1]); out.writeDouble(secondaryColor[2]);
+			out.writeDouble(craterRimFades[0]); out.writeDouble(craterRimFades[1]); out.writeDouble(craterRimFades[2]);
+			out.writeDouble(mariaCraterRimFades[0]); out.writeDouble(mariaCraterRimFades[1]); out.writeDouble(mariaCraterRimFades[2]);
+			out.writeDouble(craterRimFadeStart);
+			out.writeDouble(craterRimFadeEnd);
+			out.writeDouble(mariaCraterRimFadeStart);
+			out.writeDouble(mariaCraterRimFadeEnd);
+			out.writeDouble(normalBiomeColor[0]); out.writeDouble(normalBiomeColor[1]); out.writeDouble(normalBiomeColor[2]);
+			out.writeDouble(mountainsBiomeColor[0]); out.writeDouble(mountainsBiomeColor[1]); out.writeDouble(mountainsBiomeColor[2]);
+			out.writeDouble(mariasBiomeColor[0]); out.writeDouble(mariasBiomeColor[1]); out.writeDouble(mariasBiomeColor[2]);
+			out.writeBoolean(biomeColorSecondary != null);
+			if(biomeColorSecondary != null) out.writeDouble(biomeColorSecondary[0]); out.writeDouble(biomeColorSecondary[1]); out.writeDouble(biomeColorSecondary[2]);
+		}
+		
+		public static GraymoonGenSettings deserialize(DataInputStream in) throws Exception {
+			GraymoonGenSettings res = new GraymoonGenSettings();
+			res.width = in.readInt();
+			res.height = in.readInt();
+			res.planetRadius = in.readInt();
+			res.mariaLatitudeRange = in.readDouble();
+			res.mariaLongitudeRange = in.readDouble();
+			res.mariaFadeRange = in.readDouble();
+			res.mariaCraterCount = in.readInt();
+			res.smallCraterCount = in.readInt();
+			res.hugeCraterCount = in.readInt();
+			res.craterMaxsize = in.readDouble();
+			res.craterMinsize = in.readDouble();
+			res.craterMaxstrength = in.readDouble();
+			res.craterMinstrength = in.readDouble();
+			res.mariaCraterMaxsize = in.readDouble();
+			res.mariaCraterMinsize = in.readDouble();
+			res.mariaCraterMaxstrength = in.readDouble();
+			res.mariaCraterMinstrength = in.readDouble();
+			res.craterFlattenedStart = in.readInt();
+			res.craterFlattenedEnd = in.readInt();
+			res.bowlCraterConfig = CraterConfig.deserialize(in);
+			res.flattenedCraterConfig = CraterConfig.deserialize(in);
+			res.mariaCraterConfig = CraterConfig.deserialize(in);
+			res.mariaNoise = NoiseConfig.deserialize(in);
+			res.mountainNoise = NoiseConfig.deserialize(in);
+			res.groundNoiseLargeDetail = NoiseConfig.deserialize(in);
+			res.groundNoiseMediumDetail = NoiseConfig.deserialize(in);
+			res.groundNoiseSmallDetail = NoiseConfig.deserialize(in);
+			res.mountainsNoise = NoiseConfig.deserialize(in);
+			res.craterMountainsNoise = NoiseConfig.deserialize(in);
+			res.colorNoise = NoiseConfig.deserialize(in);
+			res.secondColorNoise = NoiseConfig.deserialize(in);
+			res.craterRimColorNoise = NoiseConfig.deserialize(in);
+			res.normalColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.mountainsColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.mariasColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			if(in.readBoolean()) {
+				res.secondaryColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			}
+			res.craterRimFades = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.mariaCraterRimFades = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.craterRimFadeStart = in.readDouble();
+			res.craterRimFadeEnd = in.readDouble();
+			res.mariaCraterRimFadeStart = in.readDouble();
+			res.mariaCraterRimFadeEnd = in.readDouble();
+			res.normalBiomeColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.mountainsBiomeColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			res.mariasBiomeColor = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			if(in.readBoolean()) {
+				res.biomeColorSecondary = new double[] {in.readDouble(), in.readDouble(), in.readDouble()};
+			}
+			return res;
 		}
 		
 		public String toString() {
