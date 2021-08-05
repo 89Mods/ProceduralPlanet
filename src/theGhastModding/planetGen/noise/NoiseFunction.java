@@ -1,6 +1,6 @@
 package theGhastModding.planetGen.noise;
 
-import java.util.Random;
+import java.util.*;
 
 public abstract class NoiseFunction {
 	

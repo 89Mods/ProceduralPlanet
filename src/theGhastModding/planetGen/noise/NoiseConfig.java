@@ -1,7 +1,6 @@
 package theGhastModding.planetGen.noise;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 
 public class NoiseConfig {
 	

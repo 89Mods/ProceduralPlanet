@@ -1,6 +1,6 @@
 package theGhastModding.planetGen.generators;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 
 public class GeneratorResult {
 	

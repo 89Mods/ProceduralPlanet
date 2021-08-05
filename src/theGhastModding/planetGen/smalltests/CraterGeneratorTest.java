@@ -1,17 +1,14 @@
 package theGhastModding.planetGen.smalltests;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Random;
+import java.awt.image.*;
+import java.io.*;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
-import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.OctaveNoise3D;
-import theGhastModding.planetGen.utils.CraterDistributer;
+import theGhastModding.planetGen.noise.*;
+import theGhastModding.planetGen.utils.*;
 import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
-import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
 
 public class CraterGeneratorTest {

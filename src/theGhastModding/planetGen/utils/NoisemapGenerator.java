@@ -1,10 +1,9 @@
 package theGhastModding.planetGen.utils;
 
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.*;
 
-import theGhastModding.planetGen.noise.NoiseConfig;
+import theGhastModding.planetGen.noise.*;
 
 public class NoisemapGenerator {
 	

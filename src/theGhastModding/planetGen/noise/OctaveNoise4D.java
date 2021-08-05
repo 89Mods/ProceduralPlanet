@@ -1,6 +1,6 @@
 package theGhastModding.planetGen.noise;
 
-import java.util.Random;
+import java.util.*;
 
 public class OctaveNoise4D extends NoiseFunction4D {
 		

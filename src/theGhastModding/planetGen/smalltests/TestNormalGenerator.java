@@ -1,11 +1,11 @@
 package theGhastModding.planetGen.smalltests;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
+import java.awt.image.*;
+import java.io.*;
 
 import javax.imageio.ImageIO;
 
-import theGhastModding.planetGen.utils.MapUtils;
+import theGhastModding.planetGen.utils.*;
 
 public class TestNormalGenerator {
 	

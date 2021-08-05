@@ -1,11 +1,9 @@
 package theGhastModding.planetGen.smalltests;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Random;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 

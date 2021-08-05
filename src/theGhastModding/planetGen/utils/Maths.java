@@ -1,6 +1,6 @@
 package theGhastModding.planetGen.utils;
 
-import java.util.Random;
+import java.util.*;
 
 public class Maths {
 	

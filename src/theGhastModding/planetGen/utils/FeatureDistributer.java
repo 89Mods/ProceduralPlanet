@@ -1,11 +1,10 @@
 package theGhastModding.planetGen.utils;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
-import theGhastModding.planetGen.noise.NoiseConfig;
+import theGhastModding.planetGen.noise.*;
 import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
 import theGhastModding.planetGen.utils.RavineDistributer.RavineDistributionSettings;

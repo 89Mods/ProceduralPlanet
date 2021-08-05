@@ -1,17 +1,14 @@
 package theGhastModding.planetGen.smalltests;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
+import java.awt.image.*;
+import java.io.*;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
-import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.utils.NoisemapGenerator;
-import theGhastModding.planetGen.noise.OctaveWorley;
+import theGhastModding.planetGen.noise.*;
+import theGhastModding.planetGen.utils.*;
 
 public class WorleyTest {
 	

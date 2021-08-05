@@ -1,8 +1,6 @@
 package theGhastModding.planetGen.utils;
 
-import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.NoiseFunction;
-import theGhastModding.planetGen.noise.NoiseFunction4D;
+import theGhastModding.planetGen.noise.*;
 
 public class NoiseUtils {
 	

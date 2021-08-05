@@ -1,7 +1,7 @@
 package theGhastModding.planetGen.utils;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
+import java.awt.*;
+import java.awt.image.*;
 
 public class MapUtils {
 	

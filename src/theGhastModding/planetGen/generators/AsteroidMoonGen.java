@@ -1,24 +1,16 @@
 package theGhastModding.planetGen.generators;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Random;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
-import theGhastModding.planetGen.noise.NoiseConfig;
-import theGhastModding.planetGen.noise.OctaveNoise3D;
-import theGhastModding.planetGen.noise.OctaveWorley;
-import theGhastModding.planetGen.utils.CraterDistributer;
+import theGhastModding.planetGen.noise.*;
+import theGhastModding.planetGen.utils.*;
 import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
-import theGhastModding.planetGen.utils.MapUtils;
-import theGhastModding.planetGen.utils.NoisemapGenerator;
-import theGhastModding.planetGen.utils.ProgressBars;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
 
 public class AsteroidMoonGen {
