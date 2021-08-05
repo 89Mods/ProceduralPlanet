@@ -6,6 +6,10 @@ public class WorleyNoise extends NoiseFunction {
 	
 	private double[][] points;
 	
+	public WorleyNoise() {
+		this(16, 16, 16);
+	}
+	
 	public WorleyNoise(int width, int height, int depth) {
 		super(width, height, depth);
 	}

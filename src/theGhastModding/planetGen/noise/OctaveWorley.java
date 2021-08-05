@@ -9,6 +9,10 @@ public class OctaveWorley extends NoiseFunction {
 	private double lacunarity;
 	private int octaves;
 	
+	public OctaveWorley(int octaves, double lacunarity, double persistence) {
+		this(16, 16, 16, octaves, lacunarity, persistence);
+	}
+	
 	public OctaveWorley(int width, int height, int depth, int octaves, double lacunarity, double persistence) {
 		super(width, height, depth);
 		this.noise = new WorleyNoise((int)(width * octaves), (int)(height * octaves), (int)(depth * octaves));

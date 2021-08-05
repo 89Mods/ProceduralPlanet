@@ -6,6 +6,10 @@ public class PerlinNoise3D extends NoiseFunction {
 	
 	private double[][][][] noiseMap;
 	
+	public PerlinNoise3D() {
+		this(16, 16, 16);
+	}
+	
 	public PerlinNoise3D(int width, int height, int depth) {
 		super(width, height, depth);
 	}

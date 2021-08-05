@@ -6,6 +6,10 @@ public class PerlinNoise4D extends NoiseFunction4D {
 	
 	private double[][][][][] noiseMap;
 	
+	public PerlinNoise4D(Random rng) {
+		this(rng, 8, 8, 8, 8);
+	}
+	
 	public PerlinNoise4D(Random rng, int width, int height, int depth, int trength) {
 		super(width, height, depth, trength);
 		this.noiseMap = new double[width + 1][height + 1][depth + 1][trength + 1][4];

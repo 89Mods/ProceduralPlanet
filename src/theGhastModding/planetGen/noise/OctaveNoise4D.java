@@ -9,6 +9,10 @@ public class OctaveNoise4D extends NoiseFunction4D {
 	private double lacunarity;
 	private int octaves;
 	
+	public OctaveNoise4D(Random rng, int octaves, double persistence, double lacunarity) {
+		this(rng, 8, 8, 8, 8, octaves, persistence, lacunarity);
+	}
+	
 	public OctaveNoise4D(Random rng, int width, int height, int depth, int trength, int octaves, double persistence, double lacunarity) {
 		super(width, height, depth, trength);
 		this.noise = new PerlinNoise4D(rng, (int)(width + octaves), (int)(height * octaves), (int)(depth * octaves), (int)(trength * octaves));

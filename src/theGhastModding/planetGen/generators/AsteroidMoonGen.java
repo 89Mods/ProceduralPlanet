@@ -30,12 +30,12 @@ public class AsteroidMoonGen {
 		public int planetRadius             = 20000;
 		public boolean ridgedShape          = false;
 		
-		public NoiseConfig shapeNoise       = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3, 2.0, 0.32)).setIsRidged(ridgedShape).setNoiseStrength(1.35).setNoiseScale(2.0).setDistortStrength(0.25).setNoiseOffset(ridgedShape ? 0.078 : 0.25);
-		public NoiseConfig groundNoise      = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 3, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.65).setDistortStrength(0.5).setNoiseOffset(0.325);
-		public NoiseConfig peakNoise        = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.125).setNoiseScale(0.64).setDistortStrength(0.5).setNoiseOffset(0.325);
-		public NoiseConfig secondaryNoise   = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 5, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.1).setNoiseScale(0.5).setDistortStrength(0.4).setNoiseOffset(0.325);
-		public NoiseConfig secondColorNoise = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 2, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.0).setNoiseScale(1.15).setDistortStrength(0.25).setNoiseOffset(0.325);
-		public NoiseConfig colorNoise       = new NoiseConfig(new OctaveWorley(16, 16, 16, 6, 2.0, 0.64)).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1.0).setDistortStrength(0.75).setNoiseOffset(0);
+		public NoiseConfig shapeNoise       = new NoiseConfig(new OctaveNoise3D(3, 2.0, 0.32)).setIsRidged(ridgedShape).setNoiseStrength(1.35).setNoiseScale(2.0).setDistortStrength(0.25).setNoiseOffset(ridgedShape ? 0.078 : 0.25);
+		public NoiseConfig groundNoise      = new NoiseConfig(new OctaveNoise3D(3, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.65).setDistortStrength(0.5).setNoiseOffset(0.325);
+		public NoiseConfig peakNoise        = new NoiseConfig(new OctaveNoise3D(4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.125).setNoiseScale(0.64).setDistortStrength(0.5).setNoiseOffset(0.325);
+		public NoiseConfig secondaryNoise   = new NoiseConfig(new OctaveNoise3D(5, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.1).setNoiseScale(0.5).setDistortStrength(0.4).setNoiseOffset(0.325);
+		public NoiseConfig secondColorNoise = new NoiseConfig(new OctaveNoise3D(2, 2.0, 0.5)).setIsRidged(true).setNoiseStrength(1.0).setNoiseScale(1.15).setDistortStrength(0.25).setNoiseOffset(0.325);
+		public NoiseConfig colorNoise       = new NoiseConfig(new OctaveWorley( 6, 2.0, 0.64)).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1.0).setDistortStrength(0.75).setNoiseOffset(0);
 		
 		public CraterConfig craterConfig    = CraterConfig.genBowlOnlyConfig(0, 0, 0.1, 0.5, 1.0, 4.8).setFloorHeight(-0.95);
 		public int craterCount              = 512;

@@ -6,6 +6,10 @@ public class PerlinNoise2D extends NoiseFunction {
 	
 	private double[][][] noiseMap;
 	
+	public PerlinNoise2D() {
+		this(16, 16);
+	}
+	
 	public PerlinNoise2D(int width, int height) {
 		super(width, height, 1);
 	}
