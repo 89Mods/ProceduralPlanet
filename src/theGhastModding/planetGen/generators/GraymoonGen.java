@@ -33,7 +33,8 @@ public class GraymoonGen {
 		public double mariaLatitudeRange = 80;
 		public double mariaLongitudeRange = 110;
 		public double mariaFadeRange = 30;
-		public int mariaCraterCount = 6;
+		public int    mariaCraterCount = 6;
+		public double mariaBottomHeight = 0.23;
 		
 		public int smallCraterCount = 8192+128;
 		public int hugeCraterCount = 3;
@@ -56,7 +57,7 @@ public class GraymoonGen {
 		public CraterConfig mariaCraterConfig     = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
 		
 		public NoiseConfig mariaNoise                = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 5, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(3.0).setNoiseScale(2.0).setDistortStrength(0.25).setNoiseOffset(0.1);
-		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(1.0).setNoiseScale(0.54).setDistortStrength(0.25).setNoiseOffset(0.375);
+		public NoiseConfig mountainNoise             = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 4, 2.0, 0.6)).setIsRidged(true).setNoiseStrength(1.0).setNoiseScale(0.54).setDistortStrength(0.25).setNoiseOffset(0.375);
 		public NoiseConfig groundNoiseLargeDetail    = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 8, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.75).setNoiseScale(0.7).setDistortStrength(0.5).setNoiseOffset(0.25);
 		public NoiseConfig groundNoiseMediumDetail   = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.2).setNoiseScale(0.3).setDistortStrength(0.75).setNoiseOffset(0.2);
 		public NoiseConfig groundNoiseSmallDetail    = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 6, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(0.075).setNoiseScale(0.15).setDistortStrength(0.25).setNoiseOffset(0.15);
@@ -311,10 +312,10 @@ public class GraymoonGen {
 		
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				if(marias[i][j] < 0.23) {
-					marias[i][j] = 0.23;
+				if(marias[i][j] < settings.mariaBottomHeight) {
+					marias[i][j] = settings.mariaBottomHeight;
 				}else {
-					marias[i][j] *= ((marias[i][j] - 0.23) * 3.0) + 1.0;
+					marias[i][j] *= ((marias[i][j] - settings.mariaBottomHeight) * 3.0) + 1.0;
 					marias[i][j] = Math.min(0.4, marias[i][j]);
 				}
 			}
@@ -350,7 +351,7 @@ public class GraymoonGen {
 		}else sRng.nextLong();
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				tempMap[i][j] = Math.max(0.23, tempMap[i][j]);
+				tempMap[i][j] = Math.max(settings.mariaBottomHeight, tempMap[i][j]);
 				marias[i][j] = Math.min(marias[i][j], tempMap[i][j]);
 			}
 		}
@@ -359,14 +360,16 @@ public class GraymoonGen {
 				mariaNoiseMuls[i][j] = Math.max(0, Math.min(1, (marias[i][j] - 0.23) * 5.882352941));
 			}
 		}*/
+		double sVal = settings.mariaBottomHeight + 0.03;
+		double sMul = 1.0 / (0.4 - sVal);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				//Post-scale depth because I'm too lazy to re-do all of the above code
-				if(marias[i][j] > 0.25) {
-					marias[i][j] = (marias[i][j] - 0.25) * 6.6666666;
+				if(marias[i][j] > sVal) {
+					marias[i][j] = (marias[i][j] - sVal) * sMul;
 					marias[i][j] = CraterDistributer.biasFunction(marias[i][j], -0.65);
 					marias[i][j] *= marias[i][j];
-					marias[i][j] = marias[i][j] / 6.666666 + 0.25;
+					marias[i][j] = marias[i][j] / sMul + sVal;
 				}
 				
 				marias[i][j] /= 0.4;
@@ -386,7 +389,7 @@ public class GraymoonGen {
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double val = tempMap[i][j];
-				val = Math.max(0, Math.min(1, Math.abs(val)));
+				val = Math.max(0, Math.min(1, val));
 				if(val > 0.44) {
 					double h = val - 0.44;
 					h = h * 1.785 * 5.0;

@@ -46,6 +46,7 @@ public class ComplexSurface {
 		public double baseSnowFadeStart = 0.5;
 		public double baseSnowFadeEnd = 0.6;
 		public double snowLatitudeFadeDistance = 10.0;
+		public double taigaRadiusMul = 1.7;
 		
 		public double planetTemperature = 0;
 		
@@ -373,6 +374,7 @@ public class ComplexSurface {
 				if(continentMap[i][j] < 0) continue;
 				double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 				double distance = SphereUtils.distance(latitude, longitude, -90, 0);
+				distance = Math.min(SphereUtils.distance(latitude, longitude, 90, 0), distance);
 				double val = tempMap[i][j];
 				val = Math.max(0, Math.min(1, Math.abs(val)));
 				double mul = 0.0;
@@ -396,9 +398,9 @@ public class ComplexSurface {
 					h = h * 1.612 * 5.0;
 					desertMap[i][j] = (float)(h * continentMap[i][j] * (1.0 - Math.max(Math.min(lakesMap[i][j], 1.0), 0.0)));
 				}
-				if(distance <= poleRadius * 1.7) {
-					mul = (poleRadius * 1.7) - (distance - (poleRadius * 1.0)) - (poleRadius * 1.0);
-					mul /= (poleRadius * 1.7 - poleRadius * 1.0);
+				if(distance <= poleRadius * settings.taigaRadiusMul) {
+					mul = (poleRadius * settings.taigaRadiusMul) - (distance - (poleRadius * 1.0)) - (poleRadius * 1.0);
+					mul /= (poleRadius * settings.taigaRadiusMul - poleRadius * 1.0);
 					if(distance <= (poleRadius * 1.0)) mul = 1;
 					if(mul > 1) mul = 1;
 					
@@ -672,7 +674,7 @@ public class ComplexSurface {
 							factorIn(rgb, snowMap[i][j], settings.snowColor);
 						}
 						
-						factorIn(rgb, lakesMap[i][j], settings.oceansColor);
+						factorIn(rgb, lakesMap[i][j] * 1000.0, settings.oceansColor);
 					}
 					
 					factorIn(rgb, (poles[i][j] == 0 ? 0 : 0.01) * 0.75, settings.polesColor);

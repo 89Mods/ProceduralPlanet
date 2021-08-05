@@ -178,8 +178,7 @@ public class CraterGenerator {
 		
 	}
 	
-	private double[] acosCache;
-	private double stride;
+	private TrigonometryCache trigCache;
 	private PerlinNoise3D noise3d;
 	private NoiseConfig perturbNoiseConfig;
 	private int width, height;
@@ -189,26 +188,7 @@ public class CraterGenerator {
 		this.height = height;
 		this.noise3d = new PerlinNoise3D(8, 8, 8);
 		this.perturbNoiseConfig = new NoiseConfig(noise3d);
-		double stride = Math.sqrt((double)width * (double)width + (double)height * (double)height) * 8.0 * Math.PI;
-		int len = (int)stride;
-		stride = 1.0 / stride;
-		this.stride = stride;
-		acosCache = new double[len + 1];
-		for(int i = 0; i < len + 1; i++) {
-			acosCache[i] = Math.acos(stride * i);
-		}
-	}
-	
-	private double getSignCorrectedAcosAt(int indx) {
-		if(indx < 0) return (Math.PI / 2.0) + ((Math.PI / 2.0) - acosCache[-indx]);
-		return acosCache[indx];
-	}
-	
-	private double internalAcos(double x) {
-		int indx = (int)(x / stride);
-		int indx2 = indx + (indx == acosCache.length - 1 ? 0 : 1);
-		double d = (x - (double)(indx * stride)) / stride;
-		return (1.0 - d) * getSignCorrectedAcosAt(indx) + d * getSignCorrectedAcosAt(indx2);
+		this.trigCache = new TrigonometryCache(width, height);
 	}
 	
 	public boolean genCrater(double[][] map, double[][] craterMap, int ymin, int ymax, double lat, double lon, CraterConfig cc, NoiseConfig peakNoise, Random rng) {
@@ -303,7 +283,7 @@ public class CraterGenerator {
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				
 				double b = cosLat * cosLatitude * diffLongCache[i];
-				dist = internalAcos(a + b) / Math.PI;
+				dist = trigCache.fastAcos(a + b) / Math.PI;
 				dist *= 2048;
 				
 				double crater_funct_x = dist;
