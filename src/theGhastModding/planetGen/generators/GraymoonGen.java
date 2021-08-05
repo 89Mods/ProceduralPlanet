@@ -326,7 +326,7 @@ public class GraymoonGen {
 		double[][] mariaNoiseMuls = new double[width][height];
 		
 		if(debugProgress) System.out.println("Marias");
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), marias, settings.mariaNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), marias, settings.mariaNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 			double mul = 1;
@@ -375,7 +375,7 @@ public class GraymoonGen {
 		if(debugProgress) ProgressBars.printBar();
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) tempMap[i][j] = 0.4;
 		if(settings.mariaCraterCount > 0) {
-			Random rng = new RanMT().seedCompletely(sRng.nextLong());
+			Random rng = new RanMT().seedCompletely(sRng);
 			CraterConfig mariaShapeCraterConfig = new CraterConfig();
 			mariaShapeCraterConfig.setPerturbStrength(0.5).setPerturbScale(0.25).setP1(1.0).setP2(8.4).setFloorHeight(-0.5);
 			mariaShapeCraterConfig.setEjectaStrength(1).setEjectaPerturbScale(0).setEjectaStretch(0).setEjectaPerturbStrength(0);
@@ -436,7 +436,7 @@ public class GraymoonGen {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(marias), "png", new File("marias.png"));
 		
 		if(debugProgress) System.out.println("Biomes");
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.mountainNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.mountainNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double val = tempMap[i][j];
@@ -475,7 +475,7 @@ public class GraymoonGen {
 		if(debugSteps) ImageIO.write(img, "png", new File("continents.png"));
 		
 		if(debugProgress) System.out.println("Ground");
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), finalNoiseMap, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), finalNoiseMap, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
 		double inMariaMul = 0.15;
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -502,7 +502,7 @@ public class GraymoonGen {
 		
 		if(debugProgress) System.out.println("Mountains");
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) tempMap2[i][j] = mountainMap[i][j];
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.mountainsNoise, tempMap2, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.mountainsNoise, tempMap2, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] += tempMap[i][j] + Math.min(0.2, settings.mariaCraterMaxstrength);
@@ -538,17 +538,17 @@ public class GraymoonGen {
 		CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.mainFeatureDist.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
 		RavineDistributionSettings rds = new RavineDistributionSettings(settings.ravineCount, settings.ravineMinsize, settings.ravineMaxsize, settings.ravineMinlength, settings.ravineMaxlength, 1.1, settings.ravineMinstrength, settings.ravineMaxstrength, 0.35, 0.1, 0.1, 0.2);
 		for(int i = 0; i < width; i++) Arrays.fill(tempMap[i], 0.75);
-		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, craterDistr, cds, rds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, craterDistr, cds, rds, resMul, new RanMT().seedCompletely(sRng), debugProgress);
 		//CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
 		
 		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.mainFeatureDist.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
 		rds.ravineCount = 0;
-		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, null, cds, rds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, null, cds, rds, resMul, new RanMT().seedCompletely(sRng), debugProgress);
 		//CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
 		if(settings.mariaCraterMaxstrength > 0) { //TODO: Same for ravines
 			cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
 			for(int i = 0; i < width; i++) Arrays.fill(tempMap[i], 0.75);
-			FeatureDistributer.distributeFeatures(settings.mariaFeatureDist, mariaCraterDistr.length, mariaCraterDistr[0].length, finalNoiseMap, tempMap, craterMap2, null, mariaCraterDistr, null, cds, null, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+			FeatureDistributer.distributeFeatures(settings.mariaFeatureDist, mariaCraterDistr.length, mariaCraterDistr[0].length, finalNoiseMap, tempMap, craterMap2, null, mariaCraterDistr, null, cds, null, resMul, new RanMT().seedCompletely(sRng), debugProgress);
 			//CraterDistributer.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
 		}
 		if(debugSteps) {
@@ -563,8 +563,8 @@ public class GraymoonGen {
 		//System.exit(1);
 		
 		if(debugProgress) System.out.println("Secondary Noise");
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.groundNoiseMediumDetail, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.groundNoiseSmallDetail, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.groundNoiseMediumDetail, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.groundNoiseSmallDetail, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				finalNoiseMap[i][j] -= min;
@@ -606,15 +606,15 @@ public class GraymoonGen {
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		if(settings.secondaryColor != null) {
-			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.secondColorNoise, null, resMul, debugProgress);
+			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.secondColorNoise, null, resMul, debugProgress);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
 					mariaNoiseMuls[i][j] = Math.min(1, Math.max(0, (tempMap[i][j] - 0.3) * 1.75)) * mariaNoiseMuls[i][j];
 				}
 			}
 		}
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.colorNoise, null, resMul, debugProgress);
-		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap2, settings.craterRimColorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
+		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.craterRimColorNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				double mariaMul = (marias[i][j] - 0.23) * 5.882352941;

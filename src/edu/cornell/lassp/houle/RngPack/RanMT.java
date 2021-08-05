@@ -92,21 +92,7 @@ public class RanMT extends Random {
     	return this;
     }
     
-    public RanMT seedCompletely(long rSeed) {
-    	/*try {
-    		FileInputStream fis = new FileInputStream("/dev/random");
-    		int[] seed = new int[624];
-    		byte[] intBuff = new byte[4];
-    		for(int i = 0; i < 624; i++) {
-    			fis.read(intBuff);
-    			seed[i] = (intBuff[0] & 0xFF) | ((intBuff[1] << 8) & 0xFF) | ((intBuff[2] << 16) & 0xFF) | ((intBuff[3] << 24) & 0xFF);
-    		}
-    		setSeed(seed);
-    		fis.close();
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}*/
-    	Random rng = new Random(rSeed);
+    public RanMT seedCompletely(Random rng) {
     	int[] seed = new int[624];
     	for(int i = 0; i < 624; i++) {
     		seed[i] = rng.nextInt();

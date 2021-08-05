@@ -134,14 +134,14 @@ public class FeatureDistributer {
 	public static void distributeFeatures(FeatureDistributerConfig config, int distrWidth, int distrHeight, double[][] map, double[][] featureMap, double[][] craterMap, double[][] ravineMap, boolean[][] craterDistributionMap, boolean[][] ravineDistributionMap, CraterDistributionSettings craterDistSettings, RavineDistributionSettings ravineDistSettings, double planetSizeScale, Random rng, boolean debugProgress) {
 		double[][] temp = new double[distrWidth][distrHeight];
 		if(config.useExclusiveFeatureGeneration && config.craterDistrConfig != null) {
-			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(rng.nextLong()), temp, config.craterDistrConfig, null, planetSizeScale, debugProgress);
+			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(rng), temp, config.craterDistrConfig, null, planetSizeScale, debugProgress);
 		}
 		if(config.cratersEnabled && craterDistSettings.craterCount > 0) {
 			boolean[][] finalCraterDistr = new boolean[distrWidth][distrHeight];
 			if(config.useExclusiveFeatureGeneration && craterDistributionMap != null) for(int i = 0; i < distrWidth; i++) for(int j = 0; j < distrHeight; j++) finalCraterDistr[i][j] = craterDistributionMap[i][j] & (config.craterDistrConfig != null || temp[i][j] >= config.craterNoiseThreshold);
 			else if(craterDistributionMap != null) for(int i = 0; i < distrWidth; i++) for(int j = 0; j < distrHeight; j++) finalCraterDistr[i][j] = craterDistributionMap[i][j];
 			if(!config.useExclusiveFeatureGeneration && config.craterDistrConfig != null) {
-				NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(rng.nextLong()), temp, config.craterDistrConfig, null, planetSizeScale, debugProgress);
+				NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(rng), temp, config.craterDistrConfig, null, planetSizeScale, debugProgress);
 				for(int i = 0; i < distrWidth; i++) {
 					for(int j = 0; j < distrHeight; j++) {
 						finalCraterDistr[i][j] &= temp[i][j] >= config.craterNoiseThreshold;
@@ -150,7 +150,7 @@ public class FeatureDistributer {
 			}
 			double[][] temp2 = new double[featureMap.length][featureMap[0].length];
 			for(int i = 0; i < featureMap.length; i++) for(int j = 0; j < featureMap[0].length; j++) temp2[i][j] = featureMap[i][j];
-			CraterDistributer.distributeCraters(finalCraterDistr, map, featureMap, config.bowlCraterConfig, config.flattenedCraterConfig == null ? config.bowlCraterConfig : config.flattenedCraterConfig, craterDistSettings, planetSizeScale, new RanMT().seedCompletely(rng.nextLong()), debugProgress);
+			CraterDistributer.distributeCraters(finalCraterDistr, map, featureMap, config.bowlCraterConfig, config.flattenedCraterConfig == null ? config.bowlCraterConfig : config.flattenedCraterConfig, craterDistSettings, planetSizeScale, new RanMT().seedCompletely(rng), debugProgress);
 			//I hate how this works. Absolutely hate it. But got no other choice here.
 			for(int i = 0; i < featureMap.length; i++) {
 				for(int j = 0; j < featureMap[0].length; j++) {
@@ -168,14 +168,14 @@ public class FeatureDistributer {
 			if(config.useExclusiveFeatureGeneration && craterDistributionMap != null) for(int i = 0; i < distrWidth; i++) for(int j = 0; j < distrHeight; j++) finalRavineDistr[i][j] = !craterDistributionMap[i][j] & (config.craterDistrConfig != null || temp[i][j] < config.craterNoiseThreshold);
 			else if(ravineDistributionMap != null) for(int i = 0; i < distrWidth; i++) for(int j = 0; j < distrHeight; j++) finalRavineDistr[i][j] = ravineDistributionMap[i][j];
 			if(!config.useExclusiveFeatureGeneration && config.ravineDistrConfig != null) {
-				NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(rng.nextLong()), temp, config.ravineDistrConfig, null, planetSizeScale, debugProgress);
+				NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(rng), temp, config.ravineDistrConfig, null, planetSizeScale, debugProgress);
 				for(int i = 0; i < distrWidth; i++) {
 					for(int j = 0; j < distrHeight; j++) {
 						finalRavineDistr[i][j] &= temp[i][j] >= config.ravineNoiseThreshold;
 					}
 				}
 			}
-			RavineDistributer.distributeRavines(finalRavineDistr, map, featureMap, ravineMap, config.ravineConfig, ravineDistSettings, planetSizeScale, new RanMT().seedCompletely(rng.nextLong()), debugProgress);
+			RavineDistributer.distributeRavines(finalRavineDistr, map, featureMap, ravineMap, config.ravineConfig, ravineDistSettings, planetSizeScale, new RanMT().seedCompletely(rng), debugProgress);
 		}
 	}
 	
