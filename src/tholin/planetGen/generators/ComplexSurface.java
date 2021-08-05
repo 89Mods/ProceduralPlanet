@@ -16,6 +16,8 @@ public class ComplexSurface {
 		
 		public int width = 4096;
 		public int height = 2048;
+		public int colorMapWidth = width;
+		public int colorMapHeight = height;
 		public int planetRadius = 600000;
 		
 		public double baseOceanFactor = -0.1;
@@ -274,7 +276,7 @@ public class ComplexSurface {
 		float [][] snowMap       = new float [width][height];
 		double[][] finalNoiseMap = new double[width][height];
 		byte  [][] poles         = new byte  [width][height];
-		double[][][] colorMap    = new double[width][height][3];
+		double[][][] colorMap    = new double[settings.colorMapWidth][settings.colorMapHeight][3];
 		
 		double[][] tempMap  = new double[width][height];
 		double[][] tempMap2 = new double[width][height];
@@ -609,7 +611,7 @@ public class ComplexSurface {
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
 		}
-		if(debugProgress) System.err.println(biggestPixelValue);
+		if(debugProgress) System.out.println(biggestPixelValue);
 		result.heightmap = img;
 		result.heightmap16 = MapUtils.render16bit(finalNoiseMap);
 		result.heightmap24 = MapUtils.render24bit(finalNoiseMap);
@@ -626,22 +628,25 @@ public class ComplexSurface {
 		currStep++;
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		if(settings.colorMapWidth != width || settings.colorMapHeight != height) tempMap = new double[settings.colorMapWidth][settings.colorMapHeight];
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
-		for(int i = 0; i < width; i++) {
+		for(int i = 0; i < settings.colorMapWidth; i++) {
+			int i2 = settings.colorMapWidth == width ? i : (int)((double)i / (double)(settings.colorMapWidth - 1) * (double)(width - 1));
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
-			for(int j = 0; j < height; j++) {
-				double continent   = Math.min(1, continentMap[i][j]);
+			for(int j = 0; j < settings.colorMapHeight; j++) {
+				int j2 = settings.colorMapHeight == height ? j : (int)((double)j / (double)(settings.colorMapHeight - 1) * (double)(height - 1));
+				double continent   = Math.min(1, continentMap[i2][j2]);
 				double[] rgb = null;
-				if(poles[i][j] != 0 && (continent <= 1e-8 || lakesMap[i][j] != 0)) {
+				if(poles[i2][j2] != 0 && (continent <= 1e-8 || lakesMap[i2][j2] != 0)) {
 					rgb = Arrays.copyOf(settings.polesColor, 3);
 				}else {
 					if(continent <= 1e-8) {
 						colorMap[i][j] = settings.oceansColor;
 						continue;
 					}
-					if(snowMap[i][j] >= 1.0 - 1e-8) {
+					if(snowMap[i2][j2] >= 1.0 - 1e-8) {
 						rgb = Arrays.copyOf(settings.snowColor, 3);
-					}else if(distanceMap[i][j] <= settings.beachThreshold) {
+					}else if(distanceMap[i2][j2] <= settings.beachThreshold) {
 						rgb = Arrays.copyOf(settings.beachesColor, 3);
 					}else {
 						double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
@@ -649,8 +654,8 @@ public class ComplexSurface {
 						distance = Math.min(distance, Maths.gcDistance(latitude, longitude, 90, 0));
 						
 						rgb = Arrays.copyOf(settings.lowlandColor, 3);
-						factorIn(rgb, hillMap[i][j], settings.hillsColor);
-						factorIn(rgb, taigaMap[i][j], settings.taigaColor);
+						factorIn(rgb, hillMap[i2][j2], settings.hillsColor);
+						factorIn(rgb, taigaMap[i2][j2], settings.taigaColor);
 						double coldnessFactor = 0;
 						if(distance <= poleRadius * 2.3) {
 							coldnessFactor = (poleRadius * 2.3) - (distance - (poleRadius * 1.333)) - (poleRadius * 1.333);
@@ -662,29 +667,29 @@ public class ComplexSurface {
 						}
 						if(coldnessFactor != 0) factorIn(rgb, coldnessFactor, settings.taigaColor);
 						
-						double mountainFactor = (finalNoiseMap[i][j] - settings.mountainColorFadeStart) / (settings.mountainColorFadeEnd - settings.mountainColorFadeStart);
+						double mountainFactor = (finalNoiseMap[i2][j2] - settings.mountainColorFadeStart) / (settings.mountainColorFadeEnd - settings.mountainColorFadeStart);
 						mountainFactor = Math.max(0, Math.min(1, mountainFactor));
-						if(finalNoiseMap[i][j] >= peaksFadeStart && desertMap[i][j] < 0.05) {
-							if(finalNoiseMap[i][j] >= peaksFadeEnd) {
-								factorIn(rgb, mountainMap[i][j], settings.peaksColor);
+						if(finalNoiseMap[i2][j2] >= peaksFadeStart && desertMap[i2][j2] < 0.05) {
+							if(finalNoiseMap[i2][j2] >= peaksFadeEnd) {
+								factorIn(rgb, mountainMap[i2][j2], settings.peaksColor);
 							}else {
-								double mmul = (finalNoiseMap[i][j] - peaksFadeStart) / (peaksFadeEnd - peaksFadeStart);
+								double mmul = (finalNoiseMap[i2][j2] - peaksFadeStart) / (peaksFadeEnd - peaksFadeStart);
 								factorIn(rgb, mountainFactor * (1.0 - mmul), settings.mountainsColor);
-								factorIn(rgb, mountainMap[i][j] * mmul, settings.peaksColor);
+								factorIn(rgb, mountainMap[i2][j2] * mmul, settings.peaksColor);
 							}
 						}else factorIn(rgb, mountainFactor, settings.mountainsColor);
 						
-						factorIn(rgb, desertMap[i][j], settings.desertColor);
+						factorIn(rgb, desertMap[i2][j2], settings.desertColor);
 						
-						if(snowMap[i][j] > 0) {
-							factorIn(rgb, snowMap[i][j], settings.snowColor);
+						if(snowMap[i2][j2] > 0) {
+							factorIn(rgb, snowMap[i2][j2], settings.snowColor);
 						}
 						
-						factorIn(rgb, lakesMap[i][j] * 1000.0, settings.oceansColor);
+						factorIn(rgb, lakesMap[i2][j2] * 1000.0, settings.oceansColor);
 					}
 					
-					factorIn(rgb, (poles[i][j] == 0 ? 0 : 0.01) * 0.75, settings.polesColor);
-					if(poles[i][j] != 0) {
+					factorIn(rgb, (poles[i2][j2] == 0 ? 0 : 0.01) * 0.75, settings.polesColor);
+					if(poles[i2][j2] != 0) {
 						factorIn(rgb, 0.75, settings.polesColor);
 					}
 				}
@@ -703,8 +708,8 @@ public class ComplexSurface {
 			}
 		}
 		
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
+		for(int i = 0; i < settings.colorMapWidth; i++) {
+			for(int j = 0; j < settings.colorMapHeight; j++) {
 				int r = (int)Math.max(0, Math.min(255, colorMap[i][j][0] * 255.0));
 				int g = (int)Math.max(0, Math.min(255, colorMap[i][j][1] * 255.0));
 				int b = (int)Math.max(0, Math.min(255, colorMap[i][j][2] * 255.0));
@@ -721,6 +726,7 @@ public class ComplexSurface {
 			ProgressBars.printBar();
 		}
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		if(settings.colorMapWidth < width || settings.colorMapHeight < height) colorMap = new double[width][height][3];
 		for(int i = 0; i < width; i++) {
 			if(debugProgress) ProgressBars.printProgress(i, width);
 			for(int j = 0; j < height; j++) {
@@ -814,12 +820,12 @@ public class ComplexSurface {
 			}
 		}
 		currStep++;
-		PostProcessingEffects.gaussianBlur(continentMap, tempMap, 1.0 / (double)continentMap.length, 1.0 / (double)continentMap[0].length, (int)(32.0 * (double)width / 4096.0));
+		PostProcessingEffects.gaussianBlur(continentMap, mountainMap, 1.0 / (double)continentMap.length, 1.0 / (double)continentMap[0].length, (int)(32.0 * (double)width / 4096.0));
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) {
 			if(continentMap[i][j] > 0.5) {
 				continue;
 			}else {
-				continentMap[i][j] = Math.min(253.0 / 255.0, tempMap[i][j] * 1.8);
+				continentMap[i][j] = Math.min(253.0 / 255.0, mountainMap[i][j] * 1.8);
 			}
 			continentMap[i][j] += tempMap2[i][j] * 0.2;
 		}

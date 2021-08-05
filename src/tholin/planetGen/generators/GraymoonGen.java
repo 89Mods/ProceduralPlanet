@@ -21,6 +21,8 @@ public class GraymoonGen {
 	public static class GraymoonGenSettings {
 		public int width = 4096;
 		public int height = 2048;
+		public int colorMapWidth = width;
+		public int colorMapHeight = height;
 		public int planetRadius = 200000;
 		
 		public double mariaLatitudeRange = 80;
@@ -590,7 +592,7 @@ public class GraymoonGen {
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
 		}
-		if(debugProgress) System.err.println(biggestPixelValue);
+		if(debugProgress) System.out.println(biggestPixelValue);
 		result.heightmap = img;
 		result.heightmap16 = MapUtils.render16bit(finalNoiseMap);
 		result.heightmap24 = MapUtils.render24bit(finalNoiseMap);
@@ -604,13 +606,25 @@ public class GraymoonGen {
 		if(debugProgress) System.out.println("Done.");
 		
 		if(debugProgress) System.out.println("Color Map!");
-		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		img = new BufferedImage(settings.colorMapWidth, settings.colorMapHeight, BufferedImage.TYPE_INT_RGB);
+		if(settings.colorMapWidth != width || settings.colorMapHeight != height) {
+			tempMap = new double[settings.colorMapWidth][settings.colorMapHeight];
+			tempMap2 = new double[settings.colorMapWidth][settings.colorMapHeight];
+		}
 		if(settings.secondaryColor != null) {
 			currStep++;
 			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.secondColorNoise, null, resMul, debugProgress);
-			for(int i = 0; i < width; i++) {
-				for(int j = 0; j < height; j++) {
-					mariaNoiseMuls[i][j] = Math.min(1, Math.max(0, (tempMap[i][j] - 0.3) * 1.75)) * mariaNoiseMuls[i][j];
+			for(int i = 0; i < settings.colorMapWidth; i++) {
+				int i2 = settings.colorMapWidth == width ? i : (int)((double)i / (double)(settings.colorMapWidth - 1) * (double)(width - 1));
+				for(int j = 0; j < settings.colorMapHeight; j++) {
+					int j2 = settings.colorMapHeight == height ? j : (int)((double)j / (double)(settings.colorMapHeight - 1) * (double)(height - 1));
+					tempMap2[i][j] = Math.min(1, Math.max(0, (tempMap[i][j] - 0.3) * 1.75)) * mariaNoiseMuls[i2][j2];
+				}
+			}
+			if(settings.colorMapWidth != width || settings.colorMapHeight != height) mariaNoiseMuls = new double[settings.colorMapWidth][settings.colorMapHeight];
+			for(int i = 0; i < settings.colorMapWidth; i++) {
+				for(int j = 0; j < settings.colorMapHeight; j++) {
+					mariaNoiseMuls[i][j] = tempMap2[i][j];
 				}
 			}
 		}
@@ -618,11 +632,13 @@ public class GraymoonGen {
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
 		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.craterRimColorNoise, null, resMul, debugProgress);
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				double mariaMul = (marias[i][j] - 0.23) * 5.882352941;
+		for(int i = 0; i < settings.colorMapWidth; i++) {
+			int i2 = settings.colorMapWidth == width ? i : (int)((double)i / (double)(settings.colorMapWidth - 1) * (double)(width - 1));
+			for(int j = 0; j < settings.colorMapHeight; j++) {
+				int j2 = settings.colorMapHeight == height ? j : (int)((double)j / (double)(settings.colorMapHeight - 1) * (double)(height - 1));
+				double mariaMul = (marias[i2][j2] - 0.23) * 5.882352941;
 				if(mariaMul < 0) mariaMul = 0;
-				double mountainMul = Math.max(0, Math.min(1, mountainMap[i][j]));
+				double mountainMul = Math.max(0, Math.min(1, mountainMap[i2][j2]));
 				double[] rgb = new double[] {
 						mariaMul * (mountainMul * settings.mountainsColor[0] + (1.0 - mountainMul) * settings.normalColor[0]) + (1.0 - mariaMul) * settings.mariasColor[0],
 						mariaMul * (mountainMul * settings.mountainsColor[1] + (1.0 - mountainMul) * settings.normalColor[1]) + (1.0 - mariaMul) * settings.mariasColor[1],
@@ -639,22 +655,22 @@ public class GraymoonGen {
 				rgb[0] = mul * rgb[0];
 				rgb[1] = mul * rgb[1];
 				rgb[2] = mul * rgb[2];
-				double heightCol = finalNoiseMap[i][j];
+				double heightCol = finalNoiseMap[i2][j2];
 				heightCol = 1.0 + heightCol * 0.15;
 				rgb[0] *= heightCol;
 				rgb[1] *= heightCol;
 				rgb[2] *= heightCol;
 				
-				if(craterMap1[i][j] > settings.craterRimFadeStart && tempMap2[i][j] > 0) {
-					double mmul = (craterMap1[i][j] - settings.craterRimFadeStart) / (settings.craterRimFadeEnd - settings.craterRimFadeStart);
+				if(craterMap1[i2][j2] > settings.craterRimFadeStart && tempMap2[i][j] > 0) {
+					double mmul = (craterMap1[i2][j2] - settings.craterRimFadeStart) / (settings.craterRimFadeEnd - settings.craterRimFadeStart);
 					mmul = Math.min(1, mmul);
 					mmul *= tempMap2[i][j];
 					rgb[0] *= 1.0 + settings.craterRimFades[0] * mmul;
 					rgb[1] *= 1.0 + settings.craterRimFades[1] * mmul;
 					rgb[2] *= 1.0 + settings.craterRimFades[2] * mmul;
 				}
-				if(craterMap2[i][j] > settings.mariaCraterRimFadeStart && tempMap2[i][j] > 0) {
-					double mmul = (craterMap2[i][j] - settings.mariaCraterRimFadeStart) / (settings.mariaCraterRimFadeEnd - settings.mariaCraterRimFadeStart);
+				if(craterMap2[i2][j2] > settings.mariaCraterRimFadeStart && tempMap2[i][j] > 0) {
+					double mmul = (craterMap2[i2][j2] - settings.mariaCraterRimFadeStart) / (settings.mariaCraterRimFadeEnd - settings.mariaCraterRimFadeStart);
 					mmul = Math.min(1, mmul);
 					mmul *= tempMap2[i][j];
 					rgb[0] *= 1.0 + settings.mariaCraterRimFades[0] * mmul;
@@ -678,8 +694,10 @@ public class GraymoonGen {
 		if(debugProgress) ProgressBars.printBar();
 		final double[] base = new double[] {0,0,0};
 		for(int i = 0; i < width; i++) {
+			int i2 = settings.colorMapWidth == width ? i : (int)((double)i / (double)(width - 1) * (double)(settings.colorMapWidth - 1));
 			if(debugProgress) ProgressBars.printProgress(i, width);
 			for(int j = 0; j < height; j++) {
+				int j2 = settings.colorMapHeight == height ? j : (int)((double)j / (double)(height - 1) * (double)(settings.colorMapHeight - 1));
 				double[] rgb = base;
 				if(marias[i][j] < 0.35) {
 					rgb = settings.mariasBiomeColor;
@@ -688,7 +706,7 @@ public class GraymoonGen {
 						rgb = settings.mountainsBiomeColor;
 					}else {
 						rgb = settings.normalBiomeColor;
-						if(settings.secondaryColor != null && settings.biomeColorSecondary != null && mariaNoiseMuls[i][j] >= 0.2) {
+						if(settings.secondaryColor != null && settings.biomeColorSecondary != null && mariaNoiseMuls[i2][j2] >= 0.2) {
 							rgb = settings.biomeColorSecondary;
 						}
 					}

@@ -19,6 +19,8 @@ public class AsteroidMoonGen {
 		
 		public int width                    = 4096;
 		public int height                   = 2048;
+		public int colorMapWidth            = width;
+		public int colorMapHeight           = height;
 		public int planetRadius             = 20000;
 		public boolean ridgedShape          = false;
 		
@@ -214,7 +216,7 @@ public class AsteroidMoonGen {
 				img.setRGB(i, j, b | (g << 8) | (r << 16));
 			}
 		}
-		if(debugProgress) System.err.println(biggestPixelValue);
+		if(debugProgress) System.out.println(biggestPixelValue);
 		result.heightmap = img;
 		result.heightmap16 = MapUtils.render16bit(finalNoiseMap);
 		result.heightmap24 = MapUtils.render24bit(finalNoiseMap);
@@ -229,7 +231,11 @@ public class AsteroidMoonGen {
 		
 		currStep++;
 		if(debugProgress) System.out.println("Color Map!");
-		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		img = new BufferedImage(settings.colorMapWidth, settings.colorMapHeight, BufferedImage.TYPE_INT_RGB);
+		if(settings.colorMapWidth != width || settings.colorMapHeight != height) {
+			tempMap = new double[settings.colorMapWidth][settings.colorMapHeight];
+			tempMap2 = new double[settings.colorMapWidth][settings.colorMapHeight];
+		}
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
 		if(settings.secondaryColor != null) {
 			currStep++;
@@ -238,16 +244,22 @@ public class AsteroidMoonGen {
 				for(int j = 0; j < height; j++) {
 					shapeMap[i][j] = Math.min(1, Math.max(0, shapeMap[i][j] * 7.0)) - 0.42;
 					if(shapeMap[i][j] < 0) shapeMap[i][j] = 0;
+				}
+			}
+			for(int i = 0; i < settings.colorMapWidth; i++) {
+				for(int j = 0; j < settings.colorMapHeight; j++) {
 					tempMap2[i][j] = Math.min(1, Math.max(0, tempMap2[i][j] * 1.25));
 				}
 			}
 		}
-		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
+		for(int i = 0; i < settings.colorMapWidth; i++) {
+			int i2 = settings.colorMapWidth == width ? i : (int)((double)i / (double)(settings.colorMapWidth - 1) * (double)(width - 1));
+			for(int j = 0; j < settings.colorMapHeight; j++) {
+				int j2 = settings.colorMapHeight == height ? j : (int)((double)j / (double)(settings.colorMapHeight - 1) * (double)(height - 1));
 				double[] rgb = new double[] {
-					settings.normalColor[0] * (1.0 - shapeMap[i][j]) + shapeMap[i][j] * settings.peaksColor[0],
-					settings.normalColor[1] * (1.0 - shapeMap[i][j]) + shapeMap[i][j] * settings.peaksColor[1],
-					settings.normalColor[2] * (1.0 - shapeMap[i][j]) + shapeMap[i][j] * settings.peaksColor[2],
+					settings.normalColor[0] * (1.0 - shapeMap[i2][j2]) + shapeMap[i2][j2] * settings.peaksColor[0],
+					settings.normalColor[1] * (1.0 - shapeMap[i2][j2]) + shapeMap[i2][j2] * settings.peaksColor[1],
+					settings.normalColor[2] * (1.0 - shapeMap[i2][j2]) + shapeMap[i2][j2] * settings.peaksColor[2],
 				};
 				if(settings.secondaryColor != null) {
 					rgb[0] = rgb[0] * (1.0 - tempMap2[i][j]) + tempMap2[i][j] * settings.secondaryColor[0];
@@ -260,7 +272,7 @@ public class AsteroidMoonGen {
 				rgb[0] = mul * rgb[0];
 				rgb[1] = mul * rgb[1];
 				rgb[2] = mul * rgb[2];
-				double heightCol = finalNoiseMap[i][j];
+				double heightCol = finalNoiseMap[i2][j2];
 				heightCol *= 0.1;
 				rgb[0] += heightCol;
 				rgb[1] += heightCol;
@@ -283,10 +295,12 @@ public class AsteroidMoonGen {
 		if(debugProgress) ProgressBars.printBar();
 		final double[] base = new double[] {0,0,0};
 		for(int i = 0; i < width; i++) {
+			int i2 = settings.colorMapWidth == width ? i : (int)((double)i / (double)(width - 1) * (double)(settings.colorMapWidth - 1));
 			if(debugProgress) ProgressBars.printProgress(i, width);
 			for(int j = 0; j < height; j++) {
+				int j2 = settings.colorMapHeight == height ? j : (int)((double)j / (double)(height - 1) * (double)(settings.colorMapHeight - 1));
 				double[] rgb = base;
-				if(settings.secondaryColor != null && settings.biomeColorSecondary != null && tempMap2[i][j] >= 0.75) {
+				if(settings.secondaryColor != null && settings.biomeColorSecondary != null && tempMap2[i2][j2] >= 0.75) {
 					rgb = settings.biomeColorSecondary;
 				}else {
 					if(shapeMap[i][j] <= 0.25) {
