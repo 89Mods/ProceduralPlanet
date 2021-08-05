@@ -66,4 +66,17 @@ public class PerlinNoise2D extends NoiseFunction {
 		return lerp(ix0, ix1, wy);
 	}
 	
+	public PerlinNoise2D clone() {
+		PerlinNoise2D res = new PerlinNoise2D(this.width, this.height);
+		if(this.noiseMap != null) {
+			res.noiseMap = new double[width + 1][height + 1][2];
+			for(int i = 0; i < width + 1; i++) {
+				for(int j = 0; j < height + 1; j++) {
+					res.noiseMap[i][j][0] = this.noiseMap[i][j][0];
+					res.noiseMap[i][j][1] = this.noiseMap[i][j][1];
+				}
+			}
+		}
+		return res;
+	}
 }

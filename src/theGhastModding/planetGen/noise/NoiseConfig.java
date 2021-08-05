@@ -196,4 +196,10 @@ public class NoiseConfig {
 		return s;
 	}
 	
+	public NoiseConfig clone() {
+		NoiseConfig res = new NoiseConfig(this.noise.clone(), this.ridged, this.noiseStrength, 0, this.distortStrength, this.noiseOffset, this.zOffset);
+		res.noiseLatitudeScale = this.noiseLatitudeScale;
+		res.noiseLongitudeScale = this.noiseLongitudeScale;
+		return res;
+	}
 }

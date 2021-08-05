@@ -51,16 +51,16 @@ public class RavineGeneratorTest {
 				do {
 					lat2 = rng.nextDouble() * 150.0 - 70.0;
 					lon2 = rng.nextDouble() * 360.0 - 180.0;
-				}while(SphereUtils.distance(lat1, lon1, lat2, lon2) > 0.5 || SphereUtils.angleFromCoordinate(lat1, lon1, lat2, lon2) < 10);
+				}while(Maths.gcDistance(lat1, lon1, lat2, lon2) > 0.5 || Maths.angleFromCoordinate(lat1, lon1, lat2, lon2) < 10);
 				//config.size = 2.0 + dist * 6.0 + rng.nextDouble() * 16.0;
-				config.size = 2.0 + SphereUtils.distance(lat1, lon1, lat2, lon2) * 6.0 + rng.nextDouble() * 12.0;
+				config.size = 2.0 + Maths.gcDistance(lat1, lon1, lat2, lon2) * 6.0 + rng.nextDouble() * 12.0;
 				config.ravineStrength = 0.35 * (config.size / 35.0);
 				config.shapeExponent = 1.4 + rng.nextDouble() * 0.2 - 0.1;
 				config.rimHeight = 0.25 + rng.nextDouble() * 0.2 - 0.1;
 				config.rimWidth = 0.5 + rng.nextDouble() * 0.15;
 				config.rimShapeExponent = 2.0 + rng.nextDouble() * 0.4 - 0.2;
 				//System.out.println("[" + lat1 + "," + lon1 + "], [" + lat2 + "," + lon2 + "] " + SphereUtils.angleFromCoordinate(lat1, lon1, lat2, lon2));
-				rgen.genRavine(testImg, ravineMap, lat1, lon1, lat2, lon2, false, config, rng);
+				rgen.genRavine(testImg, ravineMap, null, lat1, lon1, lat2, lon2, 0, testImg[0].length, false, config, rng);
 			}
 			
 			config.size = 32;
@@ -70,11 +70,11 @@ public class RavineGeneratorTest {
 			config.rimShapeExponent = 2.0;
 			config.shapeExponent = 2.1;
 			config.distortNoiseConfig.setNoiseStrength(0);
-			rgen.genRavine(testImg, ravineMap, -25, 0, 25, 0, false, config, rng);
+			rgen.genRavine(testImg, ravineMap, null, 0, -25, 0, 25, 0, testImg[0].length, false, config, rng);
 			config.size = 8;
 			config.ravineStrength = 0.075;
 			config.distortNoiseConfig.setNoiseStrength(0.1);
-			rgen.genRavine(testImg, ravineMap, -10, 0, 10, 5, true, config, rng);
+			rgen.genRavine(testImg, ravineMap, null, -10, 0, 10, 5, 0, testImg[0].length, true, config, rng);
 			//rgen.genRavine(testImg, ravineMap, 40, -170, 40, 170, config, rng);
 			//rgen.genRavine(testImg, ravineMap, 70, -140, 70, 140, config, rng);
 			//rgen.genRavine(testImg, ravineMap, 50, -170, 50, 10, config, rng);

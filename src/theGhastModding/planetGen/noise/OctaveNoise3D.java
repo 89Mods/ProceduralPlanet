@@ -58,4 +58,9 @@ public class OctaveNoise3D extends NoiseFunction {
 		return this.octaves;
 	}
 	
+	public OctaveNoise3D clone() {
+		OctaveNoise3D res = new OctaveNoise3D(this.width, this.height, this.depth, this.octaves, this.lacunarity, this.persistence);
+		res.noise = (PerlinNoise3D)this.noise.clone();
+		return res;
+	}
 }

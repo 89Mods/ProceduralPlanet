@@ -55,4 +55,9 @@ public class OctaveWorley extends NoiseFunction {
 		return this.octaves;
 	}
 	
+	public OctaveWorley clone() {
+		OctaveWorley res = new OctaveWorley(this.width, this.height, this.depth, this.octaves, this.lacunarity, this.persistence);
+		res.noise = (WorleyNoise)this.noise.clone();
+		return res;
+	}
 }

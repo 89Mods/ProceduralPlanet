@@ -12,7 +12,7 @@ public class PerlinNoise3D extends NoiseFunction {
 	
 	@Override
 	public void initialize(Random rng) {
-		if(this.noiseMap == null)  this.noiseMap = new double[width + 1][height + 1][depth + 1][3];
+		if(this.noiseMap == null) this.noiseMap = new double[width + 1][height + 1][depth + 1][3];
 		for(int i = 0; i < width + 1; i++) {
 			for(int j = 0; j < height + 1; j++) {
 				for(int k = 0; k < depth + 1; k++) {
@@ -91,4 +91,20 @@ public class PerlinNoise3D extends NoiseFunction {
 		return lerp(iy0, iy1, wz);
 	}
 	
+	public PerlinNoise3D clone() {
+		PerlinNoise3D res = new PerlinNoise3D(this.width, this.height, this.depth);
+		if(this.noiseMap != null) {
+			res.noiseMap = new double[width + 1][height + 1][depth + 1][3];
+			for(int i = 0; i < width + 1; i++) {
+				for(int j = 0; j < height + 1; j++) {
+					for(int k = 0; k < depth + 1; k++) {
+						res.noiseMap[i][j][k][0] = this.noiseMap[i][j][k][0];
+						res.noiseMap[i][j][k][1] = this.noiseMap[i][j][k][1];
+						res.noiseMap[i][j][k][2] = this.noiseMap[i][j][k][2];
+					}
+				}
+			}
+		}
+		return res;
+	}
 }

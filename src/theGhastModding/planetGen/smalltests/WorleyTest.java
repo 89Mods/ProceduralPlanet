@@ -24,7 +24,9 @@ public class WorleyTest {
 		NoiseConfig nc = new NoiseConfig(worley).setIsRidged(false).setNoiseStrength(1.25).setNoiseScale(1).setDistortStrength(0.5).setNoiseOffset(0);
 		System.out.println(-33 % 32);
 		try {
+			long startTime = System.currentTimeMillis();
 			NoisemapGenerator.genNoisemap(rng, noisemap, nc, null, 1.0, true);
+			System.out.println(System.currentTimeMillis() - startTime);
 		} catch(Exception e) {
 			System.err.println("Error generating noisemap: ");
 			e.printStackTrace();

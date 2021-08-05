@@ -245,7 +245,7 @@ public class CraterGenerator {
 		for(int j = ymin; j < ymax; j++) {
 			double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
 			
-			double dist = SphereUtils.distance(lat, lon, latitude, lon);
+			double dist = Maths.gcDistance(lat, lon, latitude, lon);
 			dist *= width / 2;
 			if(Math.abs(dist) >= enddist) {
 				continue;
@@ -289,7 +289,7 @@ public class CraterGenerator {
 				double crater_funct_x = dist;
 				if(Math.abs(crater_funct_x) >= enddist) continue;
 				
-				double angle = SphereUtils.angleFromCoordinate(lat, lon, latitude, longitude);
+				double angle = Maths.angleFromCoordinate(lat, lon, latitude, longitude);
 				
 				if(Double.isNaN(angle)) angle = 0.1; // This always happens exactly in the dead-center of the crater. Workaround is to set the angle to some fixed value.
 				double h =  noise[(int)(angle / 360.0 * width * 2)];
@@ -342,7 +342,7 @@ public class CraterGenerator {
 		bowl = smoothMin(bowl, floorHeight, -0.15);
 			
 		double lip = Math.pow(p2, -Math.abs(s * x2));
-		return new double[] {smoothMin((bowl + peak) * craterStrength + baseHeight, lip * craterStrength + terrainHeight, s < 4 ? 0 : 0.05), smoothMin(bowl + baseHeightCM, lip + terrainHeightCM, s < 4 ? 0 : 0.05)};
+		return new double[] {smoothMin((bowl + peak) * craterStrength + baseHeight, lip * craterStrength + terrainHeight, s < 4 ? 0 : 0.05), smoothMin(bowl * craterStrength + baseHeightCM, lip * craterStrength + terrainHeightCM, s < 4 ? 0 : 0.05)};
 	}
 	
 	public static void main(String[] args) {
@@ -387,7 +387,7 @@ public class CraterGenerator {
 			g.setColor(Color.WHITE);
 			for(int i = 0; i < 225; i++) {
 				//double h = testImg[512 - 112 + i][1024];
-				double h = CraterDistributer.biasFunction(i / 255.0, 0.5);
+				double h = Maths.biasFunction(i / 255.0, 0.5);
 				int h2 = (int)(h * 50.0);
 				g.drawLine(i, 49, i, 50 - h2 - 1);
 			}
@@ -415,4 +415,11 @@ public class CraterGenerator {
 		}
 	}
 	
+	public int getWidth() {
+		return this.width;
+	}
+	
+	public int getHeight() {
+		return this.height;
+	}
 }

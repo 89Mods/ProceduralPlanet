@@ -18,6 +18,8 @@ public abstract class NoiseFunction {
 	
 	public abstract void cleanUp();
 	
+	public abstract NoiseFunction clone();
+	
 	public int getWidth() {
 		return this.width;
 	}

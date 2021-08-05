@@ -103,10 +103,25 @@ public class RavineGenerator {
 			res.rimHeight = in.readDouble();
 			res.rimShapeExponent = in.readDouble();
 			res.rimShapeFullHyperbolic = in.readBoolean();
-			if(in.readBoolean()) res.rimNoise = NoiseConfig.deserialize(in);
-			else res.rimNoise = null;
+			res.rimNoise = in.readBoolean() ? NoiseConfig.deserialize(in) : null;
 			res.size = in.readDouble();
 			return res;
+		}
+		
+		@Override
+		public String toString() {
+			String s = "Distort Noise Configuration:\n";
+			s += "\t" + distortNoiseConfig.toString().replace("\n", "\n\t") + "\n";
+			s += String.format("Ravine Strength: %#.4f\n", this.ravineStrength);
+			s += String.format("Shape Exponent: %#.4f\n", this.shapeExponent);
+			s += String.format("Rim Width: %#.4f\n", this.rimWidth);
+			s += String.format("Rim Height: %#.4f\n", this.rimHeight);
+			s += String.format("Rim Shape Exponent: %#.4f\n", this.rimShapeExponent);
+			s += "Rim Shape Full Hyperbolic: " + Boolean.toString(this.rimShapeFullHyperbolic) + "\n";
+			s += "Rim Noise Configuration:\n";
+			s += "\t" + rimNoise.toString().replace("\n", "\n\t") + "\n";
+			s += String.format("Size: %#.4f", this.size);
+			return s;
 		}
 	}
 	
@@ -126,15 +141,21 @@ public class RavineGenerator {
 	/*
 	 * map is the hm
 	 * baseRavineMap is a map of all ravines, and must be the same for every ravine generated on the same hm, as it is used to calculate blending between ravines. Must be initialized to all 0.75.
+	 * ravineMap is an output that has the newly generated ravine added to it as well, but is not used for blending, and can thus be different from baseRavineMap before generation.
+	 * 	This is so that a map pre-populated with other features (i.e. craters) can be input as the baseRavineMap for the ravine to blend with, while ravineMap can be used
+	 * 	to create a map of just all ravines on a heightmap. Useful for generating color- or biome-maps later on.
 	 * overlayRavine specifies if the current ravine follows the terrain shape and can thus "dig into" existing ravines.
 	 */
-	public void genRavine(double[][] map, double[][] baseRavineMap, double lat1, double lon1, double lat2, double lon2, boolean overlayRavine, RavineConfig config, Random rng) {
+	public void genRavine(double[][] map, double[][] featureMap, double[][] ravineMap, double lat1, double lon1, double lat2, double lon2, int ymin, int ymax, boolean overlayRavine, RavineConfig config, Random rng) {
 		float ravineGenWidth = 1.0f + (float)config.rimWidth;
 		for(int i = 0; i < distanceMap.length; i++) Arrays.fill(distanceMap[i], ravineGenWidth);
 		drawLine(lat1, lon1, lat2, lon2, config.distortNoiseConfig, rng);
 		
+		int pxHeight = (int)Math.ceil(ravineGenWidth * config.size * ((double)height / 1024.0)) + 1;
+		int lStart = Math.max(0, ymin - pxHeight);
+		int lEnd = Math.min(height - 1, ymax + pxHeight);
 		for(int i1 = 0; i1 < width; i1++) {
-			for(int j1 = 0; j1 < height; j1++) {
+			for(int j1 = lStart; j1 < lEnd; j1++) {
 				if(!lineMap[i1][j1]) continue;
 				int currDim = 1;
 				double lat = (j1 - map[0].length / 2.0) / (map[0].length / 2.0) * 90.0;
@@ -148,6 +169,7 @@ public class RavineGenerator {
 						int sY = sYa = (int)(j1 - (currDim / 2.0) + j);
 						if(sY < 0) sY = -sY;
 						if(sY >= map[0].length) sY = map[0].length - 1 - (sY - map[0].length);
+						
 						double localLat = (double)(sY - map[0].length / 2) / (map[0].length / 2.0) * 90.0;
 						
 						double sinLatitude = Math.sin(Math.toRadians(localLat));
@@ -190,7 +212,7 @@ public class RavineGenerator {
 		
 		double genWidthPow = Math.pow(ravineGenWidth, config.shapeExponent) - 1.0;
 		for(int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
+			for(int j = ymin; j < ymax; j++) {
 				if(distanceMap[i][j] == ravineGenWidth) {
 					distanceMap[i][j] = 1.0f;
 				}else {
@@ -206,23 +228,24 @@ public class RavineGenerator {
 						distanceMap[i][j] += f * (float)h;
 					}
 					
-					double prev = baseRavineMap[i][j];
+					double prev = featureMap[i][j];
 					if(overlayRavine) {
-						baseRavineMap[i][j] -= (1.0 - distanceMap[i][j]) * config.ravineStrength;
+						featureMap[i][j] -= (1.0 - distanceMap[i][j]) * config.ravineStrength;
 					}else {
-						if(distanceMap[i][j] < 1.0) baseRavineMap[i][j] = Math.min(baseRavineMap[i][j], 0.75 - (1.0 - distanceMap[i][j]) * config.ravineStrength);
+						if(distanceMap[i][j] < 1.0) featureMap[i][j] = Math.min(featureMap[i][j], 0.75 - (1.0 - distanceMap[i][j]) * config.ravineStrength); //If featureMap > 0.75, this returns a much higher diff later
 						if(distanceMap[i][j] > 1.0) {
 							double mul = 1;
-							if(baseRavineMap[i][j] < 0.75) {
-								double a = 0.75 - baseRavineMap[i][j];
+							if(featureMap[i][j] < 0.75) {
+								double a = 0.75 - featureMap[i][j];
 								mul = 1.0 - Math.min(1, a / (config.ravineStrength * 0.64));
 							}
-							baseRavineMap[i][j] += (distanceMap[i][j] - 1.0) * config.ravineStrength * mul;
+							featureMap[i][j] += (distanceMap[i][j] - 1.0) * config.ravineStrength * mul;
 						}
 					}
 					
-					double diff = baseRavineMap[i][j] - prev;
+					double diff = featureMap[i][j] - prev;
 					map[i][j] += diff;
+					if(ravineMap != null) ravineMap[i][j] += diff;
 				}
 			}
 		}
@@ -257,7 +280,7 @@ public class RavineGenerator {
 		
 		double[] offsets = new double[steps];
 		distortNoise.noise.initialize(rng);
-		double dist = SphereUtils.distance(lat1, lon1, lat2, lon2);
+		double dist = Maths.gcDistance(lat1, lon1, lat2, lon2);
 		for(int i = 0; i < steps; i++) {
 			offsets[i] = distortNoise.noiseOffset + distortNoise.noiseStrength * distortNoise.noise.sample(1.0 + distortNoise.zOffset, (double)i / (double)steps * distortNoise.noiseLatitudeScale * dist, 0.0) * 0.5;
 			if(distortNoise.ridged) offsets[i] = Math.abs(offsets[i]) - 0.5 * distortNoise.noiseStrength;
@@ -312,4 +335,11 @@ public class RavineGenerator {
 		res[1] = ((270 + (Math.atan2(z, x)) * 180 / Math.PI) % 360) - 180; //Longitude
 	}
 	
+	public int getWidth() {
+		return this.width;
+	}
+	
+	public int getHeight() {
+		return this.height;
+	}
 }

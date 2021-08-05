@@ -13,15 +13,20 @@ import javax.imageio.ImageIO;
 
 import edu.cornell.lassp.houle.RngPack.RanMT;
 import theGhastModding.planetGen.noise.NoiseConfig;
+import theGhastModding.planetGen.noise.OctaveNoise2D;
 import theGhastModding.planetGen.utils.NoisemapGenerator;
 import theGhastModding.planetGen.noise.OctaveNoise3D;
 import theGhastModding.planetGen.noise.OctaveWorley;
-import theGhastModding.planetGen.utils.CraterDistributer;
 import theGhastModding.planetGen.utils.CraterDistributer.CraterDistributionSettings;
 import theGhastModding.planetGen.utils.CraterGenerator;
 import theGhastModding.planetGen.utils.CraterGenerator.CraterConfig;
+import theGhastModding.planetGen.utils.FeatureDistributer;
+import theGhastModding.planetGen.utils.FeatureDistributer.FeatureDistributerConfig;
 import theGhastModding.planetGen.utils.MapUtils;
+import theGhastModding.planetGen.utils.Maths;
 import theGhastModding.planetGen.utils.ProgressBars;
+import theGhastModding.planetGen.utils.RavineDistributer.RavineDistributionSettings;
+import theGhastModding.planetGen.utils.RavineGenerator.RavineConfig;
 
 public class GraymoonGen {
 	
@@ -36,6 +41,7 @@ public class GraymoonGen {
 		public int    mariaCraterCount = 6;
 		public double mariaBottomHeight = 0.23;
 		
+		public int ravineCount = 2;
 		public int smallCraterCount = 8192+128;
 		public int hugeCraterCount = 3;
 		
@@ -43,6 +49,13 @@ public class GraymoonGen {
 		public double craterMinsize = 4;
 		public double craterMaxstrength = 0.6;
 		public double craterMinstrength = 0.1;
+		
+		public double ravineMaxsize = 4;
+		public double ravineMinsize = 0.4;
+		public double ravineMaxstrength = 0.35;
+		public double ravineMinstrength = 0.1;
+		public double ravineMinlength = Math.PI / 80.0;
+		public double ravineMaxlength = Math.PI / 10.0;
 		
 		public double mariaCraterMaxsize = 32;
 		public double mariaCraterMinsize = 4;
@@ -52,8 +65,28 @@ public class GraymoonGen {
 		public int craterFlattenedStart = 14;
 		public int craterFlattenedEnd = 28;
 		
-		public CraterConfig bowlCraterConfig      = new CraterConfig(0, 0, 0.2, 0.4, 1.0, 3.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, 96, 1.0);
-		public CraterConfig flattenedCraterConfig = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, 96, 0.9);
+		private final NoiseConfig defaultRavineDistortNoise = new NoiseConfig(new OctaveNoise2D(8, 3, 6, 1.6, 0.6), false, 20, 1.57, 0, 0, 0);
+		private final NoiseConfig defaultRavineRimNoise = new NoiseConfig(new OctaveNoise3D(24, 24, 24, 10, 2.0, 0.65)).setIsRidged(true).setNoiseStrength(1.0 / 0.23).setNoiseScale(0.72).setDistortStrength(0.43).setNoiseOffset(0);
+		public FeatureDistributerConfig mainFeatureDist = new FeatureDistributerConfig(
+				null, null,
+				true, true,
+				false,
+				0, 0,
+				new CraterConfig(0, 0, 0.2, 0.4, 1.0, 3.8, -10.0, 0.3, 2.1, 0.1, 0.4, 30, 96, 1.0),
+				new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -0.5, 0.35, 6.1, 0.15, 0.75, 30, 96, 0.9),
+				new RavineConfig(defaultRavineDistortNoise, 0, 1.5, 0.25, 0.2, 2.1, false, defaultRavineRimNoise, 0)
+				);
+		
+		public FeatureDistributerConfig mariaFeatureDist = new FeatureDistributerConfig(
+				null, null,
+				true, false,
+				false,
+				0, 0,
+				new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0),
+				null,
+				null
+				);
+		
 		public CraterConfig mariaCraterConfig     = new CraterConfig(0, 0, 0.125, 0.5, 1.0, 4.8, -10.0, 0.0, 2.1, 0.1, 0.4, 1000000, 1000000, 1.0);
 		
 		public NoiseConfig mariaNoise                = new NoiseConfig(new OctaveNoise3D(16, 16, 16, 5, 2.0, 0.6)).setIsRidged(false).setNoiseStrength(3.0).setNoiseScale(2.0).setDistortStrength(0.25).setNoiseOffset(0.1);
@@ -106,11 +139,16 @@ public class GraymoonGen {
 			out.writeDouble(mariaCraterMinsize);
 			out.writeDouble(mariaCraterMaxstrength);
 			out.writeDouble(mariaCraterMinstrength);
+			out.writeDouble(ravineMinsize);
+			out.writeDouble(ravineMaxsize);
+			out.writeDouble(ravineMinstrength);
+			out.writeDouble(ravineMaxstrength);
+			out.writeDouble(ravineMinlength);
+			out.writeDouble(ravineMaxlength);
 			out.writeInt(craterFlattenedStart);
 			out.writeInt(craterFlattenedEnd);
-			bowlCraterConfig.serialize(out);
-			flattenedCraterConfig.serialize(out);
-			mariaCraterConfig.serialize(out);
+			mainFeatureDist.serialize(out);
+			mariaFeatureDist.serialize(out);
 			mariaNoise.serialize(out);
 			mountainNoise.serialize(out);
 			groundNoiseLargeDetail.serialize(out);
@@ -158,11 +196,16 @@ public class GraymoonGen {
 			res.mariaCraterMinsize = in.readDouble();
 			res.mariaCraterMaxstrength = in.readDouble();
 			res.mariaCraterMinstrength = in.readDouble();
+			res.ravineMinsize = in.readDouble();
+			res.ravineMaxsize = in.readDouble();
+			res.ravineMinstrength = in.readDouble();
+			res.ravineMaxstrength = in.readDouble();
+			res.ravineMinlength = in.readDouble();
+			res.ravineMaxlength = in.readDouble();
 			res.craterFlattenedStart = in.readInt();
 			res.craterFlattenedEnd = in.readInt();
-			res.bowlCraterConfig = CraterConfig.deserialize(in);
-			res.flattenedCraterConfig = CraterConfig.deserialize(in);
-			res.mariaCraterConfig = CraterConfig.deserialize(in);
+			res.mainFeatureDist = FeatureDistributerConfig.deserialize(in);
+			res.mariaFeatureDist = FeatureDistributerConfig.deserialize(in);
 			res.mariaNoise = NoiseConfig.deserialize(in);
 			res.mountainNoise = NoiseConfig.deserialize(in);
 			res.groundNoiseLargeDetail = NoiseConfig.deserialize(in);
@@ -208,14 +251,22 @@ public class GraymoonGen {
 			s += String.format("Crater Min Size: %#.4f\n", this.craterMinsize);
 			s += String.format("Crater Max Strength: %#.4f\n", this.craterMaxstrength);
 			s += String.format("Crater Min Strength: %#.4f\n", this.craterMinstrength);
+			s += String.format("Maria Crater Max Size: %#.4f\n", this.mariaCraterMaxsize);
+			s += String.format("Maria Crater Min Size: %#.4f\n", this.mariaCraterMinsize);
+			s += String.format("Maria Crater Max Strength: %#.4f\n", this.mariaCraterMaxstrength);
+			s += String.format("Maria Crater Min Strength: %#.4f\n", this.mariaCraterMinstrength);
 			s += "Flattened Crater Start Size: " + Integer.toString(this.craterFlattenedStart) + "\n";
 			s += "Flattened Crater End Size: " + Integer.toString(this.craterFlattenedEnd) + "\n";
-			s += "Bowl Crater Configuration:\n";
-			s += "\t" + bowlCraterConfig.toString().replace("\n", "\n\t") + "\n";
-			s += "Flattened Crater Configuration:\n";
-			s += "\t" + flattenedCraterConfig.toString().replace("\n", "\n\t") + "\n";
-			s += "Maria Crater Configuration:\n";
-			s += "\t" + mariaCraterConfig.toString().replace("\n", "\n\t") + "\n";
+			s += String.format("Ravine Max Size: %#.4f\n", this.ravineMaxsize);
+			s += String.format("Ravine Min Size: %#.4f\n", this.ravineMinsize);
+			s += String.format("Ravine Max Strength: %#.4f\n", this.ravineMaxstrength);
+			s += String.format("Ravine Min Strength: %#.4f\n", this.ravineMinstrength);
+			s += String.format("Ravine Max Length: %#.4f\n", this.ravineMaxlength);
+			s += String.format("Ravine Min Length: %#.4f\n", this.ravineMinlength);
+			s += "Main Feature Configuration:\n";
+			s += "\t" + mainFeatureDist.toString().replace("\n", "\n\t") + "\n";
+			s += "Maria Feature Configuration:\n";
+			s += "\t" + mariaFeatureDist.toString().replace("\n", "\n\t") + "\n";
 			s += "Maria Noise\n";
 			s += "\t" + mariaNoise.toString().replace("\n", "\n\t") + "\n";
 			s += "Mountain biome Noise\n";
@@ -367,7 +418,7 @@ public class GraymoonGen {
 				//Post-scale depth because I'm too lazy to re-do all of the above code
 				if(marias[i][j] > sVal) {
 					marias[i][j] = (marias[i][j] - sVal) * sMul;
-					marias[i][j] = CraterDistributer.biasFunction(marias[i][j], -0.65);
+					marias[i][j] = Maths.biasFunction(marias[i][j], -0.65);
 					marias[i][j] *= marias[i][j];
 					marias[i][j] = marias[i][j] / sMul + sVal;
 				}
@@ -482,21 +533,34 @@ public class GraymoonGen {
 			Arrays.fill(craterMap2[i], 0.0);
 		}
 		double mariaRatio = (double)mariaCnt / (double)(1024 * 512);
-		int inMariaCraterCount = (int)(mariaRatio * settings.smallCraterCount);
-		double cS = settings.bowlCraterConfig.ringThreshold / settings.craterMaxsize * (settings.craterMaxstrength - settings.craterMinstrength) + settings.craterMinstrength;
-		CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
-		CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
-		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
-		CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
-		cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
-		CraterDistributer.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		int inMariaCraterCount = (int)(mariaRatio * settings.smallCraterCount * 0.5);
+		double cS = settings.mainFeatureDist.bowlCraterConfig.ringThreshold / settings.craterMaxsize * (settings.craterMaxstrength - settings.craterMinstrength) + settings.craterMinstrength;
+		CraterDistributionSettings cds = new CraterDistributionSettings(settings.smallCraterCount - inMariaCraterCount, settings.craterMinsize, settings.mainFeatureDist.bowlCraterConfig.ringThreshold - 1, settings.craterMinstrength, cS, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.76);
+		RavineDistributionSettings rds = new RavineDistributionSettings(settings.ravineCount, settings.ravineMinsize, settings.ravineMaxsize, settings.ravineMinlength, settings.ravineMaxlength, 1.1, settings.ravineMinstrength, settings.ravineMaxstrength, 0.35, 0.1, 0.1, 0.2);
+		for(int i = 0; i < width; i++) Arrays.fill(tempMap[i], 0.75);
+		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, craterDistr, cds, rds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		//CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		
+		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.mainFeatureDist.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
+		rds.ravineCount = 0;
+		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, null, cds, rds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		//CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		if(settings.mariaCraterMaxstrength > 0) { //TODO: Same for ravines
+			cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
+			for(int i = 0; i < width; i++) Arrays.fill(tempMap[i], 0.75);
+			FeatureDistributer.distributeFeatures(settings.mariaFeatureDist, mariaCraterDistr.length, mariaCraterDistr[0].length, finalNoiseMap, tempMap, craterMap2, null, mariaCraterDistr, null, cds, null, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+			//CraterDistributer.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
+		}
 		if(debugSteps) {
 			ImageIO.write(MapUtils.renderMap(craterMap1), "png", new File("crater_map.png"));
 			ImageIO.write(MapUtils.renderMap(craterMap2), "png", new File("crater_map_2.png"));
 		}
 		
 		double min = 0;
+		//for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] = Math.max(0, finalNoiseMap[i][j]);
 		for(double[] d1:finalNoiseMap) for(double d2:d1) if(d2 < min) min = d2;
+		//System.out.println(min);
+		//System.exit(1);
 		
 		if(debugProgress) System.out.println("Secondary Noise");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng.nextLong()), tempMap, settings.groundNoiseMediumDetail, null, resMul, debugProgress);
@@ -670,7 +734,7 @@ public class GraymoonGen {
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));
 			ImageIO.write(res.biomeMap, "png", new File("past_outputs/" + name + "_biomes.png"));
 			NoisemapGenerator.cleanUp();
-			CraterDistributer.cleanUp();
+			FeatureDistributer.cleanUp();
 		}catch(Exception e) {
 			System.err.println("Error: ");
 			e.printStackTrace();
@@ -686,7 +750,7 @@ public class GraymoonGen {
 			-1604595848,1094885740,959983985,-197534979,1971590300,1265195917,-519224815,1209004753,924713749,-1891761108,993462313,-1533530616,1827964836,1912347934,-1840068926,-1367811850,
 			370508368,1548559157,-1940330240,-978076124,1015684955,1953409481,1903198038,1165995759,349176679,848153625,130062322,-899917908,-228768808,-1028527667,1479105512,224028414,
 			2042180512,2026944108,-2096167646,147981347,1072954373,-723151136,-945774769,-1476290879,1988560904,-1239002660,54827945,944691963,1508392521,1705970654,974467288,807684558,
-			-665187226,306157620,748065138,-1532702737,1304576018,803476680,-1710167466,-189803991,1083290586,-274539536,-1841809393,-990935768,-1022966124,-1400258784,604760230,1709937878,
+			-665187226,306157620,748065138,-1532702737,1304576018,803476681,-1710167466,-189803991,1083290586,-274539536,-1841809393,-990935768,-1022966124,-1400258784,604760230,1709937878,
 			2069145853,-1129015031,-887599903,576330045,1551463852,-1910036139,931388419,-1054286359,-926081777,1486112014,1888634632,-1141311448,781394003,-160672857,-595109672,1208397238,
 			773396931,-1462952324,1813228143,1421323038,2890142,-1557336396,45425995,273255033,586075938,1020984466,951407970,1482336546,1247445857,-1884345085,-1095791647,-1186509005,
 			821355573,478355598,-37170790,1150625143,746888828,-951152010,184789407,-1813578725,1506723807,503383356,-1487297529,-1020075708,-911795461,1718797122,-779829362,171214604,

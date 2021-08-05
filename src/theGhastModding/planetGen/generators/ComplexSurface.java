@@ -20,7 +20,7 @@ import theGhastModding.planetGen.noise.WorleyNoise;
 import theGhastModding.planetGen.utils.CraterDistributer;
 import theGhastModding.planetGen.utils.MapUtils;
 import theGhastModding.planetGen.utils.ProgressBars;
-import theGhastModding.planetGen.utils.SphereUtils;
+import theGhastModding.planetGen.utils.Maths;
 
 public class ComplexSurface {
 	
@@ -306,8 +306,8 @@ public class ComplexSurface {
 			for(int j = 0; j < height; j++) {
 				if(continentMap[i][j] < 0) continue;
 				double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
-				double distance = SphereUtils.distance(latitude, longitude, -90, 0);
-				distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0));
+				double distance = Maths.gcDistance(latitude, longitude, -90, 0);
+				distance = Math.min(distance, Maths.gcDistance(latitude, longitude, 90, 0));
 				double val = tempMap[i][j];
 				val = Math.max(0, Math.min(1, Math.abs(val)));
 				if(distanceMap[i][j] < settings.hillsFadeEnd && val > 0.34) {
@@ -373,8 +373,8 @@ public class ComplexSurface {
 			for(int j = 0; j < height; j++) {
 				if(continentMap[i][j] < 0) continue;
 				double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
-				double distance = SphereUtils.distance(latitude, longitude, -90, 0);
-				distance = Math.min(SphereUtils.distance(latitude, longitude, 90, 0), distance);
+				double distance = Maths.gcDistance(latitude, longitude, -90, 0);
+				distance = Math.min(Maths.gcDistance(latitude, longitude, 90, 0), distance);
 				double val = tempMap[i][j];
 				val = Math.max(0, Math.min(1, Math.abs(val)));
 				double mul = 0.0;
@@ -566,14 +566,14 @@ public class ComplexSurface {
 				double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
 				for(int j = 0; j < height; j++) {
 					double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
-					double distance = SphereUtils.distance(latitude, longitude, -90, 0);
+					double distance = Maths.gcDistance(latitude, longitude, -90, 0);
 					distance += NoiseUtils.sampleSpherableNoise(i, 175, width, 360, settings.polesPerturbNoise) * Math.min(poleRadius, 0.275) / 1.333;
 					if(distance <= poleRadius) {
 						poles[i][j] = 1;
 					}else {
 						poles[i][j] = 0;
 					}
-					distance = SphereUtils.distance(latitude, longitude, 90, 0);
+					distance = Maths.gcDistance(latitude, longitude, 90, 0);
 					distance += NoiseUtils.sampleSpherableNoise(i, 185, width, 360, settings.polesPerturbNoise) * Math.min(poleRadius, 0.275) / 1.333;
 					if(distance <= poleRadius) {
 						poles[i][j] = 2;
@@ -639,8 +639,8 @@ public class ComplexSurface {
 						rgb = Arrays.copyOf(settings.beachesColor, 3);
 					}else {
 						double latitude = (double)(j - height / 2) / (height / 2.0) * 90.0;
-						double distance = SphereUtils.distance(latitude, longitude, -90, 0);
-						distance = Math.min(distance, SphereUtils.distance(latitude, longitude, 90, 0));
+						double distance = Maths.gcDistance(latitude, longitude, -90, 0);
+						distance = Math.min(distance, Maths.gcDistance(latitude, longitude, 90, 0));
 						
 						rgb = Arrays.copyOf(settings.lowlandColor, 3);
 						factorIn(rgb, hillMap[i][j], settings.hillsColor);
