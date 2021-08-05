@@ -296,8 +296,11 @@ public class GraymoonGen {
 		
 	}
 	
-	public static GeneratorResult generate(Random sRng, GraymoonGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
+	private int currStep = 0;
+	
+	public GeneratorResult generate(Random sRng, GraymoonGenSettings settings, boolean debugProgress, boolean debugSteps) throws Exception {
 		GeneratorResult result = new GeneratorResult();
+		currStep = 0;
 		
 		final int width = settings.width;
 		final int height = settings.height;
@@ -360,6 +363,7 @@ public class GraymoonGen {
 			}
 		}
 		
+		currStep++;
 		if(debugProgress) ProgressBars.printBar();
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) tempMap[i][j] = 0.4;
 		if(settings.mariaCraterCount > 0) {
@@ -423,6 +427,7 @@ public class GraymoonGen {
 		
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(marias), "png", new File("marias.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Biomes");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.mountainNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
@@ -462,6 +467,7 @@ public class GraymoonGen {
 		}
 		if(debugSteps) ImageIO.write(img, "png", new File("continents.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Ground");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), finalNoiseMap, settings.groundNoiseLargeDetail, null, resMul, debugProgress);
 		double inMariaMul = 0.15;
@@ -488,6 +494,7 @@ public class GraymoonGen {
 		}
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("ground.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Mountains");
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) tempMap2[i][j] = mountainMap[i][j];
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.mountainsNoise, tempMap2, resMul, debugProgress);
@@ -500,8 +507,9 @@ public class GraymoonGen {
 		
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("complex.png"));
 		
+		currStep++;
 		if(debugProgress) {
-			System.out.println("Craters");
+			System.out.println("Features");
 		}
 		boolean[][] craterDistr = new boolean[1024][512];
 		boolean[][] mariaCraterDistr = new boolean[1024][512];
@@ -531,11 +539,13 @@ public class GraymoonGen {
 		
 		cds = new CraterDistributionSettings(settings.hugeCraterCount, settings.mainFeatureDist.bowlCraterConfig.ringThreshold + 0.001, settings.craterMaxsize, cS, settings.craterMaxstrength, settings.craterFlattenedStart, settings.craterFlattenedEnd, settings.craterMountainsNoise, 0.5);
 		rds.ravineCount = 0;
+		currStep++;
 		FeatureDistributer.distributeFeatures(settings.mainFeatureDist, craterDistr.length, craterDistr[0].length, finalNoiseMap, tempMap, craterMap1, null, craterDistr, null, cds, rds, resMul, new RanMT().seedCompletely(sRng), debugProgress);
 		//CraterDistributer.distributeCraters(craterDistr, finalNoiseMap, craterMap1, settings.bowlCraterConfig, settings.flattenedCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
 		if(settings.mariaCraterMaxstrength > 0) { //TODO: Same for ravines
 			cds = new CraterDistributionSettings(inMariaCraterCount, settings.mariaCraterMinsize, settings.mariaCraterMaxsize, settings.mariaCraterMinstrength, settings.mariaCraterMaxstrength, 0, 1000000, settings.craterMountainsNoise, 0.7);
 			for(int i = 0; i < width; i++) Arrays.fill(tempMap[i], 0.75);
+			currStep++;
 			FeatureDistributer.distributeFeatures(settings.mariaFeatureDist, mariaCraterDistr.length, mariaCraterDistr[0].length, finalNoiseMap, tempMap, craterMap2, null, mariaCraterDistr, null, cds, null, resMul, new RanMT().seedCompletely(sRng), debugProgress);
 			//CraterDistributer.distributeCraters(mariaCraterDistr, finalNoiseMap, craterMap2, settings.mariaCraterConfig, settings.mariaCraterConfig, cds, resMul, new RanMT().seedCompletely(sRng.nextLong()), debugProgress);
 		}
@@ -550,8 +560,10 @@ public class GraymoonGen {
 		//System.out.println(min);
 		//System.exit(1);
 		
+		currStep++;
 		if(debugProgress) System.out.println("Secondary Noise");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.groundNoiseMediumDetail, null, resMul, debugProgress);
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.groundNoiseSmallDetail, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -594,6 +606,7 @@ public class GraymoonGen {
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		if(settings.secondaryColor != null) {
+			currStep++;
 			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.secondColorNoise, null, resMul, debugProgress);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -601,7 +614,9 @@ public class GraymoonGen {
 				}
 			}
 		}
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.craterRimColorNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -657,6 +672,7 @@ public class GraymoonGen {
 		if(debugSteps) ImageIO.write(img, "png", new File("colors.png"));
 		if(debugProgress) System.out.println("Done.");
 		
+		currStep++;
 		if(debugProgress) System.out.println("Biome map");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		if(debugProgress) ProgressBars.printBar();
@@ -689,8 +705,20 @@ public class GraymoonGen {
 		result.biomeMap = img;
 		if(debugSteps) ImageIO.write(img, "png", new File("biomes.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Done.");
 		return result;
+	}
+	
+	public int getTotalSteps(GraymoonGenSettings settings) {
+		int totalSteps = 12;
+		if(settings.mariaCraterMaxstrength > 0) totalSteps++;
+		if(settings.secondaryColor != null) totalSteps++;
+		return totalSteps;
+	}
+	
+	public int getCurrentStep() {
+		return this.currStep;
 	}
 	
 	public static void main(String[] args) {
@@ -716,7 +744,7 @@ public class GraymoonGen {
 			}
 			
 			GraymoonGenSettings settings = new GraymoonGenSettings();
-			GeneratorResult res = GraymoonGen.generate(rng, settings, true, true, test);
+			GeneratorResult res = new GraymoonGen().generate(rng, settings, true, true);
 			ImageIO.write(res.heightmap, "png", new File("past_outputs/" + name + ".png"));
 			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));

@@ -140,8 +140,11 @@ public class AsteroidMoonGen {
 		
 	}
 	
-	public static GeneratorResult generate(Random sRng, AsteroidGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
+	private int currStep = 0;
+	
+	public GeneratorResult generate(Random sRng, AsteroidGenSettings settings, boolean debugProgress, boolean debugSteps) throws Exception {
 		GeneratorResult result = new GeneratorResult();
+		currStep = 0;
 		
 		// Copy commonly-used config items into local variables to make the code more readable
 		final int width     = settings.width;
@@ -162,6 +165,7 @@ public class AsteroidMoonGen {
 		}
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(shapeMap), "png", new File("shape.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Ground");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.groundNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
@@ -171,6 +175,7 @@ public class AsteroidMoonGen {
 		}
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("ground.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Peaks");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.peakNoise, shapeMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
@@ -180,10 +185,12 @@ public class AsteroidMoonGen {
 		}
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("peaks.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Craters");
 		CraterDistributionSettings cds = new CraterDistributionSettings(settings.craterCount, settings.craterMinsize, settings.craterMaxsize, settings.craterMinstrength, settings.craterMaxstrength, 0, 1000000, null, 0.7);
 		CraterDistributer.distributeCraters(null, finalNoiseMap, null, settings.craterConfig, settings.craterConfig, cds, resMul, new RanMT().seedCompletely(sRng), true);
 		
+		currStep++;
 		if(debugProgress) System.out.println("Secondary noise");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.secondaryNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
@@ -220,10 +227,12 @@ public class AsteroidMoonGen {
 		}
 		if(debugProgress) System.out.println("Done.");
 		
+		currStep++;
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
 		if(settings.secondaryColor != null) {
+			currStep++;
 			NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.secondColorNoise, null, resMul, debugProgress);
 			for(int i = 0; i < width; i++) {
 				for(int j = 0; j < height; j++) {
@@ -268,6 +277,7 @@ public class AsteroidMoonGen {
 		if(debugSteps) ImageIO.write(img, "png", new File("colors.png"));
 		if(debugProgress) System.out.println("Done.");
 		
+		currStep++;
 		if(debugProgress) System.out.println("Biome map");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		if(debugProgress) ProgressBars.printBar();
@@ -296,8 +306,19 @@ public class AsteroidMoonGen {
 		result.biomeMap = img;
 		if(debugSteps) ImageIO.write(img, "png", new File("biomes.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Done.");
 		return result;
+	}
+	
+	public int getTotalSteps(AsteroidGenSettings settings) {
+		int totalSteps = 7;
+		if(settings.secondaryColor != null) totalSteps++;
+		return totalSteps;
+	}
+	
+	public int getCurrentStep() {
+		return this.currStep;
 	}
 	
 	public static void main(String[] args) {
@@ -323,7 +344,7 @@ public class AsteroidMoonGen {
 				fos.close();
 			}
 			AsteroidGenSettings settings = new AsteroidGenSettings();
-			GeneratorResult res = AsteroidMoonGen.generate(rng, settings, true, true, test);
+			GeneratorResult res = new AsteroidMoonGen().generate(rng, settings, true, true);
 			ImageIO.write(res.heightmap, "png", new File("past_outputs/" + name + ".png"));
 			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));

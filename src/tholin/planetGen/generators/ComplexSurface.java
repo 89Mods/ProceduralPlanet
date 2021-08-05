@@ -219,8 +219,11 @@ public class ComplexSurface {
 		return 1.0 / (1.0 + Math.exp(-x));
 	}
 	
-	public static GeneratorResult generate(Random sRng, ComplexGenSettings settings, boolean debugProgress, boolean debugSteps, boolean test) throws Exception {
+	public int currStep = 0;
+	
+	public GeneratorResult generate(Random sRng, ComplexGenSettings settings, boolean debugProgress, boolean debugSteps) throws Exception {
 		GeneratorResult result = new GeneratorResult();
+		currStep = 0;
 		final int width = settings.width;
 		final int height = settings.height;
 		final double resMul = 600000.0 / (double)settings.planetRadius * 0.85;
@@ -276,6 +279,7 @@ public class ComplexSurface {
 		double[][] tempMap  = new double[width][height];
 		double[][] tempMap2 = new double[width][height];
 		
+		currStep++;
 		if(debugProgress) System.out.println("Continents & Biomes");
 		double oldNoiseOffset = settings.continentNoise.noiseOffset;
 		settings.continentNoise.setNoiseOffset(oceanFactor / 2.0); //TODO: Find a way to do this without permanently modifying this NoiseConfig
@@ -288,6 +292,7 @@ public class ComplexSurface {
 			}
 		}
 		
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.mountainNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
@@ -322,7 +327,9 @@ public class ComplexSurface {
 				}
 			}
 		}
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.lakeNoiseMul, null, resMul, debugProgress);
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.lakeNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -354,7 +361,9 @@ public class ComplexSurface {
 				}
 			}
 		}
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.desertNoise, null, resMul, debugProgress);
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.taigaNoise, null, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			double longitude = (double)(i - width / 2) / (width / 2.0) * 180.0;
@@ -482,10 +491,13 @@ public class ComplexSurface {
 			//System.exit(0);
 		}
 		
+		currStep++;
 		if(debugProgress) System.out.println("Ground");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), finalNoiseMap, settings.groundNoiseLargeDetail, continentMap, resMul, debugProgress);
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.groundNoiseMediumDetail, continentMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.groundNoiseSmallDetail, continentMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		
@@ -498,6 +510,7 @@ public class ComplexSurface {
 		}
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(finalNoiseMap), "png", new File("ground.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Hills");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.hillNoise, hillMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
@@ -508,8 +521,10 @@ public class ComplexSurface {
 		}
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("hills.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Mountains");
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.mountainsNoise, mountainMap, resMul, debugProgress);
+		currStep++;
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap2, settings.mountainWorley, mountainMap, resMul, debugProgress);
 		for(int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
@@ -521,6 +536,7 @@ public class ComplexSurface {
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) finalNoiseMap[i][j] += tempMap[i][j];
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("mountains.png"));
 		
+		currStep++;
 		if(debugProgress) {
 			System.out.println("Lakes");
 			ProgressBars.printBar();
@@ -540,6 +556,7 @@ public class ComplexSurface {
 		if(debugSteps) ImageIO.write(MapUtils.renderMap(tempMap), "png", new File("lakes.png"));
 		if(debugProgress) ProgressBars.finishProgress();
 		
+		currStep++;
 		if(debugProgress) {
 			System.out.println("Poles");
 			ProgressBars.printBar();
@@ -606,6 +623,7 @@ public class ComplexSurface {
 		if(debugProgress) System.out.println("Done.");
 		//long name = System.currentTimeMillis();
 		
+		currStep++;
 		if(debugProgress) System.out.println("Color Map!");
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		NoisemapGenerator.genNoisemap(new RanMT().seedCompletely(sRng), tempMap, settings.colorNoise, null, resMul, debugProgress);
@@ -696,6 +714,7 @@ public class ComplexSurface {
 		}
 		result.colorMap = img;
 		if(debugSteps) ImageIO.write(img, "png", new File("colors.png"));
+		currStep++;
 		if(debugProgress) {
 			System.out.println("Done.");
 			System.out.println("Biome map");
@@ -777,6 +796,7 @@ public class ComplexSurface {
 		
 		settings.polesPerturbNoise.noise.cleanUp();
 		
+		currStep++;
 		if(debugProgress) {
 			System.out.println("Done.");
 			System.out.println("Ocean map");
@@ -793,6 +813,7 @@ public class ComplexSurface {
 				continentMap[i][j] = Math.max(0, Math.min(1, continentMap[i][j]));
 			}
 		}
+		currStep++;
 		PostProcessingEffects.gaussianBlur(continentMap, tempMap, 1.0 / (double)continentMap.length, 1.0 / (double)continentMap[0].length, (int)(32.0 * (double)width / 4096.0));
 		for(int i = 0; i < width; i++) for(int j = 0; j < height; j++) {
 			if(continentMap[i][j] > 0.5) {
@@ -806,9 +827,18 @@ public class ComplexSurface {
 		result.oceanMap = MapUtils.renderMap(continentMap);
 		if(debugSteps) ImageIO.write(result.oceanMap, "png", new File("oceans.png"));
 		
+		currStep++;
 		if(debugProgress) System.out.println("Done.");
 		
 		return result;
+	}
+	
+	public int getTotalSteps(ComplexGenSettings settings) {
+		return 19;
+	}
+	
+	public int getCurrentStep() {
+		return this.currStep;
 	}
 	
 	//IDEA: OpenCL perlin noise, Change noise stretch using another noise function.
@@ -835,7 +865,7 @@ public class ComplexSurface {
 				fos.close();
 			}
 			ComplexGenSettings settings = new ComplexGenSettings();
-			GeneratorResult res = ComplexSurface.generate(rng, settings, true, true, test);
+			GeneratorResult res = new ComplexSurface().generate(rng, settings, true, true);
 			ImageIO.write(res.heightmap, "png", new File("past_outputs/" + name + ".png"));
 			ImageIO.write(res.heightmap16, "png", new File("past_outputs/" + name + "_16.png"));
 			ImageIO.write(res.colorMap, "png", new File("past_outputs/" + name + "_colors.png"));
